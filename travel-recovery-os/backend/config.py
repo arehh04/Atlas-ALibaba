@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     SYNAPSE_API_SECRET: str = "default-insecure-secret-change-in-prod"
+    REQUIRE_AUTH: bool = False
 
     # ── DeepSeek LLM (Main Reasoning & Arbiter) ─────────────────────────
     DEEPSEEK_API_KEY: Optional[str] = ""
@@ -58,9 +59,14 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_URL: Optional[str] = ""
     N8N_CONSENSUS_CALLBACK_URL: str = "http://127.0.0.1:8000/webhook/consensus"
 
-    # ── Atlas Sandbox API ────────────────────────────────────────────────
-    ATLAS_API_KEY: Optional[str] = "sandbox-demo-key"
-    ATLAS_BASE_URL: str = "https://sandbox.api.atlas.travel/v1"
+    # ── Atlas Official GDS API (Sandbox & Production) ──────────────────
+    ATLAS_ENV: Literal["sandbox", "production"] = "sandbox"
+    ATLAS_CLIENT_ID: str = "CTR12752_api_1"
+    ATLAS_CLIENT_SECRET: str = "sandbox-sk-CTR12752_api_1"
+    ATLAS_BASE_URL: str = "https://sandbox.atriptech.com"
+    ATLAS_SEARCH_BASE_URL: Optional[str] = None       # Populated in Prod from ATRIP Company Information
+    ATLAS_TRANSACTION_BASE_URL: Optional[str] = None  # Populated in Prod from ATRIP Company Information
+    ATLAS_API_KEY: Optional[str] = "CTR12752_api_1"
 
     # ── Redis ────────────────────────────────────────────────────────────
     REDIS_URL: Optional[str] = "redis://localhost:6379/0"

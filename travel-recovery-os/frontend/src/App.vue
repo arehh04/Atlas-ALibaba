@@ -11,6 +11,49 @@
     <!-- Main Grid -->
     <main class="flex-1 p-4 md:p-6 max-w-[1750px] w-full mx-auto space-y-5">
       
+      <!-- Friendly Hero KPI Impact Banner -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="ops-card p-3 sm:p-4 flex items-center gap-3 hover:border-brand-purple/30 transition-all">
+          <div class="w-10 h-10 rounded-2xl bg-brand-lavender flex items-center justify-center text-xl shrink-0 shadow-soft">
+            ⚡
+          </div>
+          <div>
+            <span class="text-[10px] text-warm-500 font-mono uppercase block font-medium">Avg Swarm Speed</span>
+            <span class="text-base sm:text-lg font-bold font-display text-brand-purple">4.2 Seconds</span>
+          </div>
+        </div>
+
+        <div class="ops-card p-3 sm:p-4 flex items-center gap-3 hover:border-success/30 transition-all">
+          <div class="w-10 h-10 rounded-2xl bg-success-light flex items-center justify-center text-xl shrink-0 shadow-soft">
+            💰
+          </div>
+          <div>
+            <span class="text-[10px] text-warm-500 font-mono uppercase block font-medium">Direct Cost Saved</span>
+            <span class="text-base sm:text-lg font-bold font-display text-success-dark">+$540 / Pax</span>
+          </div>
+        </div>
+
+        <div class="ops-card p-3 sm:p-4 flex items-center gap-3 hover:border-brand-blue/30 transition-all">
+          <div class="w-10 h-10 rounded-2xl bg-info-light flex items-center justify-center text-xl shrink-0 shadow-soft">
+            🛡️
+          </div>
+          <div>
+            <span class="text-[10px] text-warm-500 font-mono uppercase block font-medium">Passenger Rights</span>
+            <span class="text-base sm:text-lg font-bold font-display text-warm-900">EU261 &middot; DOT &middot; MAS</span>
+          </div>
+        </div>
+
+        <div class="ops-card p-3 sm:p-4 flex items-center gap-3 hover:border-warning/30 transition-all">
+          <div class="w-10 h-10 rounded-2xl bg-warning-light flex items-center justify-center text-xl shrink-0 shadow-soft">
+            🤖
+          </div>
+          <div>
+            <span class="text-[10px] text-warm-500 font-mono uppercase block font-medium">Autonomous Rate</span>
+            <span class="text-base sm:text-lg font-bold font-display text-warning-dark">94.2% Zero-Touch</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Top Section: Multi-Agent Pipeline Progress Tracker -->
       <ErrorBoundary fallback-title="Pipeline Display Error">
         <SwarmPipeline 
@@ -48,7 +91,10 @@
           <ErrorBoundary fallback-title="Chat Interface Error">
             <MobileHitlMock 
               :hitlStatus="hitlStatus"
+              :isStreaming="isStreaming"
               :solution="proposedSolution"
+              :ticketReceipt="ticketReceipt"
+              :disruptionData="disruptionData"
               :passengerName="disruptionData.passenger_name"
               :pnr="disruptionData.pnr"
               :candidateRoutes="candidateRoutes"

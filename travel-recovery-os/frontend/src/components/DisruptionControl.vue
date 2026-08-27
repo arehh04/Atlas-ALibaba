@@ -27,15 +27,25 @@
 
       <!-- MODE 1: SCENARIOS -->
       <div v-if="inputMode === 'scenarios'" class="space-y-2.5 text-xs">
-        <div class="text-warm-500 text-xs mb-1">Choose a scenario to simulate:</div>
+        <div class="flex items-center justify-between text-warm-500 text-xs mb-1">
+          <span>Choose a scenario to simulate:</span>
+          <span class="text-[10px] text-brand-purple font-semibold">1-Click Live AI Run</span>
+        </div>
 
         <button v-for="preset in presets" :key="preset.id" @click="selectPreset(preset)" type="button"
-          class="w-full p-3.5 rounded-2xl border text-left transition-all duration-200 group"
+          class="w-full p-3.5 rounded-2xl border text-left transition-all duration-200 group relative overflow-hidden"
           :class="selectedPresetId === preset.id ? 'bg-brand-lavender border-brand-purple/40 ring-1 ring-brand-purple/20 shadow-soft' : 'bg-white border-warm-200 hover:border-warm-300 hover:shadow-soft hover:translate-y-[-1px]'">
+          
           <div class="flex items-center justify-between font-semibold text-warm-900 mb-1">
             <span :class="preset.titleColor">{{ preset.title }}</span>
             <span class="text-[10px] px-2 py-0.5 rounded-full font-mono" :class="preset.badgeStyle">{{ preset.loyalty_tier }}</span>
           </div>
+
+          <div class="flex items-center gap-1.5 text-[10px] text-brand-purple font-medium my-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-purple"></span>
+            <span>{{ preset.highlight }}</span>
+          </div>
+
           <p class="text-[11px] text-warm-500">
             {{ preset.origin }} → {{ preset.destination }} · {{ preset.reason }} · {{ preset.delay_minutes }}m
           </p>
@@ -100,12 +110,29 @@
         <div class="p-3 rounded-xl bg-brand-lavender border border-brand-purple/20 text-brand-purple text-xs flex items-start gap-2">
           <span class="text-lg">🤖</span>
           <div>
-            <strong>AI Parser Active</strong> — Paste any raw flight alert, NOTAM, or passenger SMS. The AI will extract flight details automatically.
+            <strong>Hermes AI Parser Active</strong> — Paste any raw flight alert, NOTAM, or passenger SMS. The AI will extract flight details automatically.
           </div>
         </div>
+
+        <!-- 1-Click Sample Alert Pills -->
+        <div>
+          <label class="text-warm-500 block mb-1 text-[11px]">Quick 1-Click Sample Messages:</label>
+          <div class="flex flex-wrap gap-1.5 mb-2">
+            <button type="button" @click="setRawSample(1)" class="px-2.5 py-1 rounded-lg bg-warm-100 hover:bg-brand-lavender text-warm-700 text-[10px] font-medium border border-warm-200 transition">
+              ✈️ Changi Hydraulic Fault
+            </button>
+            <button type="button" @click="setRawSample(2)" class="px-2.5 py-1 rounded-lg bg-warm-100 hover:bg-brand-lavender text-warm-700 text-[10px] font-medium border border-warm-200 transition">
+              🌪️ Typhoon Warning
+            </button>
+            <button type="button" @click="setRawSample(3)" class="px-2.5 py-1 rounded-lg bg-warm-100 hover:bg-brand-lavender text-warm-700 text-[10px] font-medium border border-warm-200 transition">
+              ⏱️ ATC Ground Delay
+            </button>
+          </div>
+        </div>
+
         <div>
           <label class="text-warm-600 block mb-1 font-medium">Raw Message Text</label>
-          <textarea v-model="form.raw_text" rows="4"
+          <textarea v-model="form.raw_text" rows="3"
             class="w-full bg-white border border-brand-purple/30 rounded-xl p-3 text-warm-900 font-mono text-xs focus:outline-none focus:border-brand-purple/50 focus:ring-2 focus:ring-brand-purple/10 transition-all"
             placeholder="e.g. URGENT: Flight SQ108 from SIN to KUL grounded due to hydraulic fault..." required></textarea>
         </div>
@@ -130,7 +157,7 @@
     <!-- CTA Button -->
     <div class="pt-4 mt-2">
       <button @click="triggerRecovery" :disabled="isStreaming"
-        class="w-full py-3.5 px-4 rounded-2xl font-display font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden group"
+        class="w-full py-3.5 px-4 rounded-2xl font-display font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden group shadow-soft-md"
         :class="isStreaming ? 'bg-warm-200 text-warm-500 cursor-not-allowed' : 'bg-brand-gradient text-white hover:shadow-glow-purple hover:-translate-y-0.5 active:translate-y-0'">
         <span v-if="!isStreaming" class="absolute inset-0 animate-shimmer opacity-40"></span>
         <svg v-if="isStreaming" class="animate-spin h-4 w-4 text-warm-500" fill="none" viewBox="0 0 24 24">
@@ -138,10 +165,8 @@
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
         <span v-else class="flex items-center gap-2 relative z-10">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-          <span>Start Recovery</span>
+          <span class="text-base">🚀</span>
+          <span>Launch Autonomous Recovery Swarm</span>
         </span>
       </button>
     </div>
@@ -166,9 +191,9 @@ const airports = [
 ]
 
 const presets = [
-  { id: 'sq108', title: 'SQ108 Canceled (Changi Hub)', titleColor: 'text-danger', badgeStyle: 'bg-warning-light text-warning-dark border border-warning/20', pnr: 'SQ108-SIN', flight_number: 'SQ-108', origin: 'SIN', destination: 'KUL', passenger_name: 'Dr. Alexander Vance', loyalty_tier: 'GOLD', reason: 'Aircraft Hydraulic Sensor Fault', delay_minutes: 240, raw_text: 'URGENT NOTAM: Singapore Airlines SQ108 SIN-KUL canceled due to hydraulic sensor fault. Passenger Dr. Vance requires immediate flight recovery.' },
-  { id: 'mh128', title: 'MH128 Delayed Connection', titleColor: 'text-warning-dark', badgeStyle: 'bg-warm-100 text-warm-700 border border-warm-200', pnr: 'MH128-KUL', flight_number: 'MH-128', origin: 'KUL', destination: 'SIN', passenger_name: 'Marcus Brody', loyalty_tier: 'STANDARD', reason: 'Air Traffic Flow Control', delay_minutes: 320, raw_text: 'OPS ADVISORY: Flight MH128 KUL-SIN delayed 320 minutes due to flow hold. Passenger Marcus Brody will miss onward connection.' },
-  { id: 'cz3042', title: 'CZ3042 Typhoon Grounding', titleColor: 'text-brand-blue', badgeStyle: 'bg-brand-lavender text-brand-purple border border-brand-purple/20', pnr: 'CZ3042-VIP', flight_number: 'CZ-3042', origin: 'KUL', destination: 'HGH', passenger_name: 'Elena Rostova', loyalty_tier: 'PLATINUM', reason: 'Typhoon Flow Control', delay_minutes: 300, raw_text: 'WEATHER NOTAM: China Southern CZ3042 KUL-HGH grounded due to Typhoon Gaemi. Passenger Elena Rostova requires VIP direct rebooking.' }
+  { id: 'sq108', title: 'SQ108 Canceled (Changi Hub)', highlight: '⚡ VIP Gold Auto-Bypass · Business Upgrade', titleColor: 'text-danger', badgeStyle: 'bg-warning-light text-warning-dark border border-warning/20', pnr: 'SQ108-SIN', flight_number: 'SQ-108', origin: 'SIN', destination: 'KUL', passenger_name: 'Dr. Alexander Vance', loyalty_tier: 'GOLD', reason: 'Aircraft Hydraulic Sensor Fault', delay_minutes: 240, raw_text: 'URGENT NOTAM: Singapore Airlines SQ108 SIN-KUL canceled due to hydraulic sensor fault. Passenger Dr. Vance requires immediate flight recovery.' },
+  { id: 'mh128', title: 'MH128 Delayed Connection', highlight: '📱 Multi-Leg Baggage Transfer · WhatsApp HITL', titleColor: 'text-warning-dark', badgeStyle: 'bg-warm-100 text-warm-700 border border-warm-200', pnr: 'MH128-KUL', flight_number: 'MH-128', origin: 'KUL', destination: 'SIN', passenger_name: 'Marcus Brody', loyalty_tier: 'STANDARD', reason: 'Air Traffic Flow Control', delay_minutes: 320, raw_text: 'OPS ADVISORY: Flight MH128 KUL-SIN delayed 320 minutes due to flow hold. Passenger Marcus Brody will miss onward connection.' },
+  { id: 'cz3042', title: 'CZ3042 Typhoon Grounding', highlight: '🌪️ Extreme Weather Reroute · Interline Partner', titleColor: 'text-brand-blue', badgeStyle: 'bg-brand-lavender text-brand-purple border border-brand-purple/20', pnr: 'CZ3042-VIP', flight_number: 'CZ-3042', origin: 'KUL', destination: 'HGH', passenger_name: 'Elena Rostova', loyalty_tier: 'PLATINUM', reason: 'Typhoon Flow Control', delay_minutes: 300, raw_text: 'WEATHER NOTAM: China Southern CZ3042 KUL-HGH grounded due to Typhoon Gaemi. Passenger Elena Rostova requires VIP direct rebooking.' }
 ]
 
 const form = reactive({
@@ -177,6 +202,22 @@ const form = reactive({
   loyalty_tier: 'GOLD', reason: 'Aircraft Hydraulic Sensor Fault (AOG)', delay_minutes: 240,
   raw_text: 'URGENT NOTAM: Singapore Airlines SQ108 SIN-KUL canceled due to hydraulic sensor fault.'
 })
+
+function setRawSample(id) {
+  if (id === 1) {
+    form.raw_text = "URGENT NOTAM: Singapore Airlines SQ108 SIN-KUL canceled due to aircraft hydraulic sensor fault (AOG). Passenger Dr. Alexander Vance requires immediate rebooking."
+    form.passenger_name = "Dr. Alexander Vance"
+    form.loyalty_tier = "GOLD"
+  } else if (id === 2) {
+    form.raw_text = "WEATHER NOTAM: China Southern CZ3042 KUL-HGH grounded due to Typhoon Gaemi. Passenger Elena Rostova requires VIP direct flight recovery."
+    form.passenger_name = "Elena Rostova"
+    form.loyalty_tier = "PLATINUM"
+  } else {
+    form.raw_text = "OPS ADVISORY: Flight MH128 KUL-SIN delayed 320 minutes due to Air Traffic Flow Control. Passenger Marcus Brody will miss onward connection."
+    form.passenger_name = "Marcus Brody"
+    form.loyalty_tier = "STANDARD"
+  }
+}
 
 function selectPreset(preset) {
   selectedPresetId.value = preset.id

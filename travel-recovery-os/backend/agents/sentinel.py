@@ -19,6 +19,18 @@ except ImportError:
     from backend.services.llm_service import extract_disruption_with_hermes
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def sentinel_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Sentinel Agent Node: Intercepts raw disruption signals and validates payload.
@@ -27,7 +39,8 @@ async def sentinel_node(state: AgentSwarmState) -> Dict[str, Any]:
     If raw unstructured text is provided in disruption_event['raw_text'],
     Sentinel invokes Hermes to extract clean flight cancellation schema.
     """
-    event: DisruptionEvent = dict(state.get("disruption_event", {}))
+    st = _safe_state(state)
+    event: DisruptionEvent = dict(st.get("disruption_event", {}))
     raw_text = event.get("raw_text")
     
     extraction_meta = "Structured Webhook Ingest"

@@ -90,12 +90,25 @@ def _is_extraordinary_circumstance(reason: str) -> bool:
     return any(kw in reason_lower for kw in extraordinary_keywords)
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def compensation_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Compensation Agent Node: Calculates passenger rights and compensation eligibility.
     """
-    disruption = state.get("disruption_event", {})
-    passenger = state.get("passenger_context", {})
+    st = _safe_state(state)
+    disruption = st.get("disruption_event", {})
+    passenger = st.get("passenger_context", {})
 
     origin = disruption.get("origin", "KUL")
     destination = disruption.get("destination", "HGH")

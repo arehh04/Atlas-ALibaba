@@ -1,5 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001';
+const API_TOKEN = import.meta.env.VITE_API_TOKEN || 'default-insecure-secret-change-in-prod';
 
 export const getStreamUrl = (threadId) => `${API_BASE_URL}/stream/${threadId}`;
 

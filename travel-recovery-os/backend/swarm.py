@@ -37,12 +37,25 @@ except (ImportError, ValueError):
     from backend.store.sqlite_checkpointer import checkpointer, checkpointer_provider
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def execution_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Execution Node: Issues the final rebooked ticket via Atlas API once approved or bypassed.
     """
-    selected_route = state.get("selected_route")
-    event = state.get("disruption_event", {})
+    st = _safe_state(state)
+    selected_route = st.get("selected_route") if isinstance(st.get("selected_route"), dict) else None
+    event = st.get("disruption_event") if isinstance(st.get("disruption_event"), dict) else {}
     pnr = event.get("pnr", "UNKNOWN_PNR")
 
     if not selected_route:
@@ -84,9 +97,10 @@ def route_after_arbiter(state: AgentSwarmState) -> Literal["compensation_node", 
     Always routes through compensation_node first for passenger rights evaluation,
     then to HITL or execution based on Arbiter decision.
     """
-    status = state.get("hitl_status", "PENDING")
+    st = _safe_state(state)
+    status = st.get("hitl_status", "PENDING")
     # Route to compensation calculation first, then it will forward to HITL or execution
-    if state.get("compensation_result") is None:
+    if st.get("compensation_result") is None:
         return "compensation_node"
     if status == "BYPASSED" or status == "APPROVED":
         return "execution_node"
@@ -95,15 +109,17 @@ def route_after_arbiter(state: AgentSwarmState) -> Literal["compensation_node", 
 
 def route_after_compensation(state: AgentSwarmState) -> Literal["hitl_breakpoint", "execution_node"]:
     """Routes after compensation calculation based on HITL status."""
-    status = state.get("hitl_status", "PENDING")
+    st = _safe_state(state)
+    status = st.get("hitl_status", "PENDING")
     if status == "BYPASSED" or status == "APPROVED":
         return "execution_node"
     return "hitl_breakpoint"
 
 
-def should_spawn_multileg(state: AgentSwarmState) -> Literal["multileg_and_forward", "forward_only"]:
+def route_disruption_type(state: AgentSwarmState) -> Literal["multileg_and_forward", "forward_only"]:
     """Determines if multi-leg agent should be spawned based on disruption complexity."""
-    disruption = state.get("disruption_event", {})
+    st = _safe_state(state)
+    disruption = st.get("disruption_event") if isinstance(st.get("disruption_event"), dict) else {}
     # If disruption mentions connections or multi-leg, spawn the agent
     reason = (disruption.get("reason", "") + " " + disruption.get("raw_text", "")).lower()
     if any(kw in reason for kw in ["connection", "connecting", "multi-leg", "missed connection", "transfer"]):
@@ -115,9 +131,12 @@ async def hitl_breakpoint_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     HITL Breakpoint Node: Pauses execution waiting for passenger approval via n8n / WhatsApp.
     """
-    pnr = state.get("disruption_event", {}).get("pnr", "PNR")
-    selected_flight = state.get("selected_route", {}).get("flight_number", "FLT")
-    compensation = state.get("compensation_result", {})
+    st = _safe_state(state)
+    event = st.get("disruption_event") if isinstance(st.get("disruption_event"), dict) else {}
+    pnr = event.get("pnr", "PNR")
+    selected = st.get("selected_route") if isinstance(st.get("selected_route"), dict) else {}
+    selected_flight = selected.get("flight_number", "FLT")
+    compensation = st.get("compensation_result") if isinstance(st.get("compensation_result"), dict) else {}
 
     comp_msg = ""
     if compensation and compensation.get("eligible"):

@@ -61,12 +61,25 @@ def _estimate_transfer_time(
     return base_time + bag_time + special_time + layover_overhead
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def baggage_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Baggage Agent Node: Evaluates baggage transfer feasibility for the disrupted passenger.
     """
-    disruption = state.get("disruption_event", {})
-    passenger = state.get("passenger_context", {})
+    st = _safe_state(state)
+    disruption = st.get("disruption_event", {})
+    passenger = st.get("passenger_context", {})
     original_airline = disruption.get("airline", "Unknown Airline")
 
     # Derive baggage context from passenger profile and loyalty tier

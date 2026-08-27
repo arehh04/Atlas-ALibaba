@@ -222,7 +222,10 @@ import { apiClient } from '../services/api'
 
 const props = defineProps({
   hitlStatus: { type: String, default: 'IDLE' },
+  isStreaming: { type: Boolean, default: false },
   solution: { type: Object, default: null },
+  ticketReceipt: { type: Object, default: null },
+  disruptionData: { type: Object, default: () => ({}) },
   passengerName: { type: String, default: 'Traveler' },
   pnr: { type: String, default: 'PNR' },
   candidateRoutes: { type: Array, default: () => [] },
@@ -285,7 +288,7 @@ function prevCandidate() { if (candidateIndex.value > 0) candidateIndex.value-- 
 const baggageInformation = computed(() => props.baggageContext)
 const compensationInformation = computed(() => props.compensationResult)
 
-// ── Chat ─────────────────────────────────────────────────────────────────
+// ── Chat Messages ────────────────────────────────────────────────────────
 const chatMessages = reactive([
   { isUser: false, text: "SynapseAir Priority Support channel ready.", time: "12:00 PM" }
 ])
@@ -299,7 +302,66 @@ function scrollToBottom() {
   nextTick(() => { if (chatBox.value) chatBox.value.scrollTop = chatBox.value.scrollHeight })
 }
 
+// ── Event Watchers: Real-Time WhatsApp Notifications ─────────────────────
+const lastTicketNo = ref(null)
+const lastBaggageKey = ref(null)
+const lastCompKey = ref(null)
+const lastHitlStatus = ref(null)
+
+// 1. Initial Disruption Alert
+watch(() => props.isStreaming, (streaming) => {
+  if (streaming) {
+    lastTicketNo.value = null
+    lastBaggageKey.value = null
+    lastCompKey.value = null
+    lastHitlStatus.value = null
+
+    const flight = props.disruptionData?.flight_number || props.pnr || 'Flight'
+    const orig = props.disruptionData?.origin || 'SIN'
+    const dest = props.disruptionData?.destination || 'KUL'
+    const reason = props.disruptionData?.reason || 'Operational disruption'
+    const name = props.passengerName || 'Traveler'
+
+    chatMessages.push({
+      isUser: false,
+      text: `🚨 URGENT FLIGHT ALERT\nDear ${name}, your flight ${flight} (${orig} ➔ ${dest}) was disrupted (${reason}).\n\nSynapseAir AI Swarm is calculating your optimal recovery route right now...`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    })
+    scrollToBottom()
+  }
+})
+
+// 2. Baggage Update
+watch(() => props.baggageContext, (bag) => {
+  if (bag && lastBaggageKey.value !== JSON.stringify(bag)) {
+    lastBaggageKey.value = JSON.stringify(bag)
+    chatMessages.push({
+      isUser: false,
+      text: `🧳 BAGGAGE ROUTING UPDATE\n${bag.checked_bags || 1} checked bag(s) identified. Auto-transfer to recovery connection confirmed at Gate B04.`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    })
+    scrollToBottom()
+  }
+})
+
+// 3. Compensation Rights Update
+watch(() => props.compensationResult, (comp) => {
+  if (comp && comp.eligible && lastCompKey.value !== JSON.stringify(comp)) {
+    lastCompKey.value = JSON.stringify(comp)
+    chatMessages.push({
+      isUser: false,
+      text: `🛡️ PASSENGER RIGHTS COMPENSATION\nUnder ${comp.regulation || 'EU261'}, you are eligible for ${comp.currency || 'USD'} ${comp.amount_usd || 440} compensation. Direct claim recorded.`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    })
+    scrollToBottom()
+  }
+})
+
+// 4. HITL vs Auto-Rebook Notification
 watch(() => props.hitlStatus, (newStatus) => {
+  if (!newStatus || newStatus === lastHitlStatus.value) return
+  lastHitlStatus.value = newStatus
+
   if (newStatus === 'WAITING_FOR_PASSENGER') {
     startCountdown(300)
     isAiTyping.value = true
@@ -311,7 +373,7 @@ watch(() => props.hitlStatus, (newStatus) => {
       
       chatMessages.push({
         isUser: false,
-        text: `Hi ${name}, your flight was disrupted. We reserved a seat for you on ${flt} departing at ${dep}. Please tap 'Accept' below to issue your ticket immediately.`,
+        text: `Hi ${name}, we found a replacement flight on ${flt} departing at ${dep}. Please tap 'Accept' below to issue your ticket immediately.`,
         flight: props.solution,
         showCarousel: flightCandidates.value.length > 1,
         showActions: true,
@@ -321,9 +383,36 @@ watch(() => props.hitlStatus, (newStatus) => {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       })
       scrollToBottom()
-    }, 1000)
+    }, 800)
+  } else if (newStatus === 'BYPASSED') {
+    stopCountdown()
+    const name = props.passengerName || "VIP Traveler"
+    const flt = props.solution?.flight_number || "SQ-112"
+    const dep = props.solution?.departure_time || "14:30"
+    const tier = props.disruptionData?.loyalty_tier || "VIP"
+
+    chatMessages.push({
+      isUser: false,
+      text: `✨ VIP AUTO-REBOOKING ACTIVATED\nHello ${name}, based on your ${tier} tier status, your seat on ${flt} departing at ${dep} has been automatically secured. Zero airport queues required!`,
+      flight: props.solution,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    })
+    scrollToBottom()
   } else if (newStatus === 'APPROVED' || newStatus === 'REJECTED') {
     stopCountdown()
+  }
+})
+
+// 5. Official E-Ticket Issued
+watch(() => props.ticketReceipt, (ticket) => {
+  if (ticket && ticket.e_ticket_number && lastTicketNo.value !== ticket.e_ticket_number) {
+    lastTicketNo.value = ticket.e_ticket_number
+    chatMessages.push({
+      isUser: false,
+      text: `🎟️ OFFICIAL E-TICKET ISSUED\nTicket No: ${ticket.e_ticket_number}\nSeat: ${ticket.assigned_seat || '12A'}\nGate: B04\n\nYour boarding pass is ready. Proceed directly to security!`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    })
+    scrollToBottom()
   }
 })
 

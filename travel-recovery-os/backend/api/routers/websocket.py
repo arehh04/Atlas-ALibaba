@@ -144,9 +144,30 @@ async def _resume_graph(thread_id: str, config: dict):
     """Resumes the LangGraph from checkpoint after HITL approval."""
     try:
         async for chunk in swarm_graph.astream(None, config=config):
-            for node_name, node_output in chunk.items():
+            chunk_items = []
+            if isinstance(chunk, dict):
+                chunk_items = list(chunk.items())
+            elif isinstance(chunk, (list, tuple)):
+                if len(chunk) == 2 and isinstance(chunk[0], str):
+                    chunk_items = [(chunk[0], chunk[1])]
+                elif len(chunk) > 0 and isinstance(chunk[0], (list, tuple)) and len(chunk[0]) == 2:
+                    chunk_items = list(chunk)
+
+            for node_name, node_output in chunk_items:
+                if not isinstance(node_output, dict):
+                    if isinstance(node_output, (list, tuple)) and len(node_output) == 2 and isinstance(node_output[1], dict):
+                        node_output = node_output[1]
+                    else:
+                        continue
+
                 logs = node_output.get("execution_logs", [])
+                if not isinstance(logs, list):
+                    logs = [logs]
+
                 for log in logs:
+                    if not isinstance(log, dict):
+                        log = {"message": str(log), "level": "INFO", "timestamp": __import__("datetime").datetime.now().isoformat()}
+
                     await ws_manager.send_json(thread_id, {
                         "type": "AGENT_STEP",
                         "thread_id": thread_id,
@@ -156,7 +177,8 @@ async def _resume_graph(thread_id: str, config: dict):
                     })
 
         final_state = await swarm_graph.aget_state(config)
-        ticket = final_state.values.get("ticket_confirmation")
+        state_vals = final_state.values if isinstance(getattr(final_state, "values", None), dict) else {}
+        ticket = state_vals.get("ticket_confirmation")
         await ws_manager.send_json(thread_id, {
             "type": "WORKFLOW_COMPLETE",
             "thread_id": thread_id,

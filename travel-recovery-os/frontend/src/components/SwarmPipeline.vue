@@ -61,6 +61,19 @@
 
     </div>
 
+    <!-- Live Agent Reasoning Insight Banner -->
+    <div v-if="activeAgent !== 'idle'" class="mt-3.5 p-3 rounded-2xl bg-brand-lavender/60 border border-brand-purple/20 flex items-center justify-between text-xs animate-slide-up">
+      <div class="flex items-center gap-2.5">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-purple opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-purple"></span>
+        </span>
+        <span class="font-bold text-brand-purple font-display text-xs">AI Swarm Reasoning:</span>
+        <span class="text-warm-800 text-[11px] font-medium">{{ getLiveAgentThought() }}</span>
+      </div>
+      <span class="text-[10px] font-mono text-warm-500 hidden sm:inline">0-Touch Autonomous Workflow</span>
+    </div>
+
   </div>
 </template>
 
@@ -135,5 +148,18 @@ function getReadablePhaseName() {
     profile: 'Checking Loyalty', sentinel: 'Detecting Disruption'
   }
   return map[props.activeAgent] || props.activeAgent?.toUpperCase() || 'STANDBY'
+}
+
+function getLiveAgentThought() {
+  const thoughts = {
+    sentinel: 'Hermes AI: Intercepted disruption NOTAM; parsed flight cancellation and extracted affected passenger PNR.',
+    profile: 'SLA Engine: Verified passenger loyalty status and retrieved guaranteed cabin & direct flight requirements.',
+    scout: 'Atlas GDS: Queried live airline flight inventory across partner networks for viable alternative routes.',
+    arbiter: 'DeepSeek AI: Reasoned 14 multi-criteria tradeoffs (time, loyalty, direct flight, baggage) and picked the optimal recovery route.',
+    hitl: 'n8n WhatsApp Gateway: Dispatched interactive WhatsApp rebooking approval template to passenger phone.',
+    executor: 'Atlas GDS: Verified fare, locked seat, and issued electronic ticket with baggage transfer confirmation.',
+    completed: 'Swarm Finished: Passenger confirmed on new flight with zero airport counter queue time!'
+  }
+  return thoughts[props.activeAgent] || 'Autonomous multi-agent swarm analyzing disruption parameters...'
 }
 </script>

@@ -17,6 +17,18 @@ except ImportError:
     from backend.tools.atlas_client import search_alternative_flights
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def scout_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Scout Agent Node: Queries Atlas Sandbox API for candidate routes.
@@ -24,7 +36,8 @@ async def scout_node(state: AgentSwarmState) -> Dict[str, Any]:
     [ATLAS API INTEGRATION]
     Executes real-time flight inventory lookup based on disruption origin/destination.
     """
-    event = state.get("disruption_event", {})
+    st = _safe_state(state)
+    event = st.get("disruption_event", {})
     origin = event.get("origin", "KUL")
     destination = event.get("destination", "HGH")
     scheduled_dep = event.get("scheduled_departure", datetime.now().strftime("%Y-%m-%d"))

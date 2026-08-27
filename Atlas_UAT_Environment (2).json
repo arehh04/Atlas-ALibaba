@@ -1,0 +1,62 @@
+{
+  "name": "Atlas UAT Environment",
+  "_postman_variable_scope": "environment",
+  "values": [
+    {
+      "key": "client_id",
+      "value": "your_client_id_here",
+      "type": "default",
+      "enabled": true,
+      "description": "x-atlas-client-id provided by Atlas"
+    },
+    {
+      "key": "client_secret",
+      "value": "your_client_secret_here",
+      "type": "secret",
+      "enabled": true,
+      "description": "x-atlas-client-secret provided by Atlas"
+    },
+    {
+      "key": "currency",
+      "value": "USD",
+      "type": "default",
+      "enabled": true,
+      "description": "Currency for search. Use the currency your account is configured for (e.g. USD, EUR, SGD). Contact Atlas if unsure."
+    },
+    {
+      "key": "from_date",
+      "value": "20260601",
+      "type": "default",
+      "enabled": true,
+      "description": "Departure date in YYYYMMDD format. Must be a future date 2-4 weeks out."
+    },
+    {
+      "key": "s1_routingIdentifier",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Auto-populated by Search step"
+    },
+    {
+      "key": "s1_sessionId",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Auto-populated by Verify step"
+    },
+    {
+      "key": "s1_orderNo",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Auto-populated by Order step"
+    },
+    {
+      "key": "s1_poll_count",
+      "value": "0",
+      "type": "default",
+      "enabled": true,
+      "description": "Internal polling counter for Retrieve step"
+    }
+  ]
+}

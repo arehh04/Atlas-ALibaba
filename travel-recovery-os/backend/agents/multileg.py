@@ -81,6 +81,18 @@ def _analyze_connection_viability(
     return [connecting]
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def multileg_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Multi-Leg Agent Node: Evaluates connecting flight disruptions.
@@ -88,7 +100,8 @@ async def multileg_node(state: AgentSwarmState) -> Dict[str, Any]:
     Runs in parallel with Profile and Scout after Sentinel.
     Publishes connection viability information for the Arbiter.
     """
-    disruption = state.get("disruption_event", {})
+    st = _safe_state(state)
+    disruption = st.get("disruption_event", {})
     origin = disruption.get("origin", "KUL")
     destination = disruption.get("destination", "HGH")
     delay_minutes = disruption.get("delay_minutes", 0)

@@ -36,23 +36,28 @@ CHANNEL_PREFIX: str = "synapseair:channel:"
 # Redis Connection Singleton
 # ---------------------------------------------------------------------------
 _redis_pool: Optional[Any] = None
+_redis_failed: bool = False
 
 
 async def get_redis() -> Optional[Any]:
     """Returns a shared Redis connection, or None if Redis is unavailable."""
-    global _redis_pool
-    if not _REDIS_AVAILABLE:
+    global _redis_pool, _redis_failed
+    if not _REDIS_AVAILABLE or _redis_failed:
+        return None
+    if os.getenv("USE_REDIS", "false").lower() not in ("true", "1"):
+        _redis_failed = True
         return None
     if _redis_pool is None:
         try:
             _redis_pool = aioredis.from_url(
                 REDIS_URL,
                 decode_responses=True,
-                socket_connect_timeout=3.0,
-                retry_on_timeout=True,
+                socket_connect_timeout=0.5,
+                retry_on_timeout=False,
             )
             await _redis_pool.ping()
         except Exception:
+            _redis_failed = True
             _redis_pool = None
     return _redis_pool
 

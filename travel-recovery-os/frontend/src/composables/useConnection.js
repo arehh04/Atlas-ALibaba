@@ -24,35 +24,43 @@ export function useConnection() {
   function connect(threadId, onMessage, onError) {
     closeConnections()
 
+    // Primary real-time stream: Server-Sent Events (SSE)
+    _openSSE(threadId, onMessage, onError)
+
+    // Secondary bidirectional channel: WebSocket (for HITL consensus)
     try {
       _openWebSocket(threadId, onMessage, onError)
-    } catch {
-      _openSSE(threadId, onMessage, onError)
+    } catch (e) {
+      console.warn('WS initialization skipped:', e)
     }
   }
 
   function _openWebSocket(threadId, onMessage, onError) {
     const wsUrl = getWebSocketUrl(threadId)
-    webSocket = new WebSocket(wsUrl)
+    try {
+      webSocket = new WebSocket(wsUrl)
 
-    webSocket.onopen = () => { connectionMode.value = 'websocket' }
-
-    webSocket.onmessage = (event) => {
-      try {
-        onMessage(JSON.parse(event.data))
-      } catch {
-        console.warn('Non-JSON WebSocket packet:', event.data)
+      webSocket.onopen = () => {
+        if (connectionMode.value === 'none') connectionMode.value = 'websocket'
       }
-    }
 
-    webSocket.onerror = () => {
-      console.warn('WebSocket failed, falling back to SSE')
-      closeConnections()
-      _openSSE(threadId, onMessage, onError)
-    }
+      webSocket.onmessage = (event) => {
+        try {
+          onMessage(JSON.parse(event.data))
+        } catch {
+          console.warn('Non-JSON WebSocket packet:', event.data)
+        }
+      }
 
-    webSocket.onclose = () => {
-      if (connectionMode.value === 'websocket') connectionMode.value = 'none'
+      webSocket.onerror = (err) => {
+        console.warn('WebSocket connection note:', err)
+      }
+
+      webSocket.onclose = () => {
+        if (connectionMode.value === 'websocket') connectionMode.value = 'sse'
+      }
+    } catch (e) {
+      console.warn('WebSocket init exception:', e)
     }
   }
 

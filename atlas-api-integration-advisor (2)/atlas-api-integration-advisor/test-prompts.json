@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "Typical: New client integration guide",
+    "prompt": "I'm an OTA looking to integrate Atlas flight booking. What should I do?",
+    "expected": "Identify client as OTA type → Recommend Flow A → Show complete Search→Verify→Order→Pay chain → Provide sandbox credential acquisition guidance"
+  },
+  {
+    "id": 2,
+    "scenario": "Complex: Seat + baggage + FR-specific handling",
+    "prompt": "A customer wants to fly from Dublin to London on Ryanair, and needs to add baggage and select seats.",
+    "expected": "Identify FR requires orderCommit.do + locale field → Call getLuggage.do → Call seatAvailability.do → Pass productCode into order.do ancillaries"
+  },
+  {
+    "id": 3,
+    "scenario": "Troubleshooting: Integration error",
+    "prompt": "I keep getting status 102 when calling search.do. What's wrong?",
+    "expected": "Diagnose 102 = missing Accept-Encoding: gzip header → Provide fix → Also check other common headers"
+  }
+]

@@ -59,7 +59,7 @@ async def extract_disruption_with_hermes(raw_text: str) -> Dict[str, Any]:
         client = AsyncOpenAI(
             base_url=settings.HERMES_API_BASE,
             api_key=settings.HERMES_API_KEY or "none",
-            timeout=10.0,
+            timeout=5.0,
             default_headers={
                 "HTTP-Referer": "https://synapseair.travel",
                 "X-Title": "SynapseAir Travel Recovery OS"
@@ -171,7 +171,7 @@ async def evaluate_routes_with_deepseek(
         client = AsyncOpenAI(
             api_key=settings.DEEPSEEK_API_KEY,
             base_url=settings.DEEPSEEK_BASE_URL,
-            timeout=20.0
+            timeout=6.0
         )
         response = await client.chat.completions.create(
             model=settings.DEEPSEEK_MODEL,

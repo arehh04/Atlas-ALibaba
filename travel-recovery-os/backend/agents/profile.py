@@ -43,13 +43,26 @@ def derive_financial_arbitrage(tier: str, delay_minutes: int) -> Dict[str, float
     }
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def profile_agent_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Profile Agent: Evaluates loyalty SLA rules and financial liabilities.
     """
-    pax_ctx = state.get("passenger_context", {})
+    st = _safe_state(state)
+    pax_ctx = st.get("passenger_context", {})
     tier = (pax_ctx.get("loyalty_tier") or "STANDARD").upper()
-    disruption = state.get("disruption_event", {})
+    disruption = st.get("disruption_event", {})
     delay_mins = disruption.get("delay_minutes", 180)
     
     financials = derive_financial_arbitrage(tier, delay_mins)

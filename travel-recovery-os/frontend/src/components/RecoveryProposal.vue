@@ -86,15 +86,30 @@
           </div>
         </div>
 
-        <!-- Savings -->
-        <div class="p-3 sm:p-3.5 rounded-2xl bg-white border border-warm-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <!-- Boarding Pass Barcode & Gate Info -->
+        <div class="p-3 rounded-2xl bg-white border border-warm-200 flex items-center justify-between text-[11px]">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🧳</span>
+            <div>
+              <span class="text-[10px] text-warm-500 block font-medium">Baggage Transfer</span>
+              <span class="font-bold text-success-dark text-xs">Auto-Routed to Gate B4</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-warm-500 block font-medium">Boarding Gate</span>
+            <span class="font-mono font-bold text-brand-purple text-xs">GATE B04</span>
+          </div>
+        </div>
+
+        <!-- Savings Arbitrage Card -->
+        <div class="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-success-light/60 to-brand-lavender/40 border border-success/30 grid grid-cols-2 gap-3 text-xs">
           <div class="flex items-start gap-2">
             <div class="w-8 h-8 rounded-xl bg-success-light flex items-center justify-center shrink-0">
               <span class="text-success text-sm">💰</span>
             </div>
             <div>
-              <span class="text-[9px] text-warm-500 block uppercase font-mono tracking-wider">Savings</span>
-              <span class="text-success-dark font-bold text-sm">${{ solution.financial_savings?.airline_savings_usd || 280 }}</span>
+              <span class="text-[9px] text-warm-500 block uppercase font-mono tracking-wider">Airline Savings</span>
+              <span class="text-success-dark font-bold text-sm">+${{ solution.financial_savings?.airline_savings_usd || 280 }}</span>
             </div>
           </div>
           <div class="flex items-start gap-2">
@@ -102,8 +117,8 @@
               <span class="text-info text-sm">🛡️</span>
             </div>
             <div>
-              <span class="text-[9px] text-warm-500 block uppercase font-mono tracking-wider">Penalty Avoided</span>
-              <span class="text-warm-800 font-semibold">${{ solution.financial_savings?.hotel_penalty_avoided_usd || 350 }}</span>
+              <span class="text-[9px] text-warm-500 block uppercase font-mono tracking-wider">EU261 Fine Avoided</span>
+              <span class="text-warm-800 font-bold text-sm">+${{ solution.financial_savings?.hotel_penalty_avoided_usd || 320 }}</span>
             </div>
           </div>
         </div>
@@ -111,25 +126,34 @@
         <!-- AI Rationale -->
         <div class="p-3.5 rounded-2xl bg-warm-50 border border-warm-200 text-xs">
           <div class="font-display font-semibold text-warm-800 mb-1.5 flex items-center gap-2 text-[11px]">
-            <span class="text-brand-purple">✨</span> AI Decision Summary
+            <span class="text-brand-purple">✨</span> DeepSeek AI Reasoning
           </div>
           <p class="leading-relaxed text-warm-600 text-[11px]">{{ solution.rationale }}</p>
         </div>
 
-        <!-- Ticket Confirmed -->
-        <div v-if="ticketReceipt" class="p-3.5 rounded-2xl bg-success-light border border-success/20 flex items-center justify-between animate-slide-up">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-success/20 flex items-center justify-center">
-              <svg class="w-4 h-4 text-success-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        <!-- Ticket Confirmed with Barcode -->
+        <div v-if="ticketReceipt" class="p-3.5 rounded-2xl bg-success-light border border-success/30 space-y-2 animate-slide-up">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-success/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-success-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              <div>
+                <div class="font-display font-bold text-xs text-success-dark">Official E-Ticket Issued</div>
+                <div class="text-[10px] font-mono font-bold text-success">{{ ticketReceipt.e_ticket_number }}</div>
+              </div>
             </div>
-            <div>
-              <div class="font-display font-bold text-xs text-success-dark">E-Ticket Confirmed</div>
-              <div class="text-[10px] font-mono text-success">{{ ticketReceipt.e_ticket_number }}</div>
+            <div class="text-right text-[11px]">
+              <span class="text-warm-500 block text-[10px]">Seat</span>
+              <strong class="text-warm-900 font-mono text-xs bg-white px-2 py-0.5 rounded-md border border-success/30">{{ ticketReceipt.assigned_seat || '12A' }}</strong>
             </div>
           </div>
-          <div class="text-right text-[11px]">
-            <span class="text-warm-500">Seat</span>
-            <strong class="text-warm-900 ml-1">{{ ticketReceipt.assigned_seat || '12A' }}</strong>
+          <!-- Barcode simulation lines -->
+          <div class="pt-2 border-t border-success/20 flex items-center justify-between">
+            <div class="flex items-center gap-1 font-mono tracking-widest text-[11px] text-warm-400 select-none">
+              ||| | |||| | || ||| || |||| | ||| || |||
+            </div>
+            <span class="text-[9px] font-mono text-success font-semibold">VERIFIED ATLAS GDS</span>
           </div>
         </div>
       </div>

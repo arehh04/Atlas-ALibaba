@@ -3,7 +3,7 @@ import json
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 
-from backend.services.telemetry_service import get_thread_listeners, get_thread_event_history
+from backend.services.telemetry_service import subscribe, unsubscribe, get_event_history
 from backend.swarm import swarm_graph
 
 router = APIRouter(tags=["telemetry"])
@@ -16,18 +16,12 @@ router = APIRouter(tags=["telemetry"])
 )
 async def stream_telemetry(thread_id: str, request: Request):
     """SSE live log stream adhering to text/event-stream specification."""
-    queue: asyncio.Queue = asyncio.Queue()
-    _thread_listeners = get_thread_listeners()
-    _thread_event_history = get_thread_event_history()
-    
-    if thread_id not in _thread_listeners:
-        _thread_listeners[thread_id] = []
-    _thread_listeners[thread_id].append(queue)
+    queue = await subscribe(thread_id)
+    history = await get_event_history(thread_id)
     
     async def event_generator():
-        if thread_id in _thread_event_history:
-            for hist_event in _thread_event_history[thread_id]:
-                yield f"data: {json.dumps(hist_event)}\n\n"
+        for hist_event in history:
+            yield f"data: {json.dumps(hist_event)}\n\n"
                 
         try:
             while True:
@@ -39,8 +33,7 @@ async def stream_telemetry(thread_id: str, request: Request):
                 except asyncio.TimeoutError:
                     yield ": keep-alive\n\n"
         finally:
-            if thread_id in _thread_listeners and queue in _thread_listeners[thread_id]:
-                _thread_listeners[thread_id].remove(queue)
+            await unsubscribe(thread_id, queue)
                 
     return StreamingResponse(
         event_generator(),

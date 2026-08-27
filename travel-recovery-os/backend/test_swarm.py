@@ -12,10 +12,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# Ensure UTF-8 output on Windows consoles with immediate flush
-if sys.platform == "win32":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True, write_through=True)
-
+import pytest
 from backend.state import AgentSwarmState
 from backend.swarm import build_swarm_graph
 from backend.tools.atlas_client import search_alternative_flights, issue_ticket
@@ -23,6 +20,7 @@ from backend.services.llm_service import extract_disruption_with_hermes, evaluat
 from backend.services.n8n_service import dispatch_hitl_to_n8n
 
 
+@pytest.mark.asyncio
 async def test_atlas_tools():
     print("1. Testing Atlas Sandbox API mock tools...")
     routes = await search_alternative_flights("KUL", "HGH", "2026-08-25")
@@ -35,6 +33,7 @@ async def test_atlas_tools():
     print(f"  ✓ Atlas ticketing issued ticket: {ticket['e_ticket_number']}")
 
 
+@pytest.mark.asyncio
 async def test_hermes_extraction():
     print("\n2. Testing Hermes LLM / Function Calling Unstructured Extraction...")
     raw_notam = "URGENT OPS NOTICE: Flight CZ-3042 from KUL to HGH canceled due to typhoon warning. Passenger PNR-8842 affected."
@@ -46,6 +45,7 @@ async def test_hermes_extraction():
     print(f"  ✓ Extraction engine: {extracted.get('extracted_by')}")
 
 
+@pytest.mark.asyncio
 async def test_deepseek_cot_arbitration():
     print("\n3. Testing DeepSeek LLM Multi-Criteria Route Arbitration...")
     routes = await search_alternative_flights("KUL", "HGH", "2026-08-25")
@@ -61,6 +61,7 @@ async def test_deepseek_cot_arbitration():
     print(f"  ✓ Decision: {evaluation.get('hitl_status')}")
 
 
+@pytest.mark.asyncio
 async def test_n8n_webhook_dispatch():
     print("\n4. Testing n8n WhatsApp Gateway Webhook Dispatch...")
     receipt = await dispatch_hitl_to_n8n(
@@ -74,6 +75,7 @@ async def test_n8n_webhook_dispatch():
     print(f"  ✓ n8n gateway response: {receipt.get('status')} (Target: {receipt.get('target_url')})")
 
 
+@pytest.mark.asyncio
 async def test_end_to_end_langgraph_swarm():
     print("\n5. Testing End-to-End LangGraph Swarm with HITL Pause & Resume...")
     graph, _ = build_swarm_graph()

@@ -33,6 +33,18 @@ def get_n8n_event_log() -> List[Dict[str, Any]]:
     return get_n8n_events(limit=200)
 
 
+def _safe_dict(val: Any) -> Dict[str, Any]:
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, (list, tuple)):
+        for item in val:
+            if isinstance(item, dict):
+                return item
+    if hasattr(val, "dict") and callable(getattr(val, "dict")):
+        return val.dict()
+    return {}
+
+
 # ---------------------------------------------------------------------------
 # Dispatch HITL to n8n
 # ---------------------------------------------------------------------------
@@ -53,11 +65,14 @@ async def dispatch_hitl_to_n8n(
     target_url = custom_n8n_url or settings.N8N_WEBHOOK_URL
     callback_url = settings.N8N_CONSENSUS_CALLBACK_URL
 
-    passenger_name = passenger_context.get("passenger_name", "Valued Passenger")
-    phone = passenger_context.get("phone_number", "+60 12-345 6789")
-    flight_num = selected_route.get("flight_number", "CZ-3042")
-    airline = selected_route.get("airline", "Partner Carrier")
-    dep_time = selected_route.get("departure_time", "14:30")
+    pax_ctx = _safe_dict(passenger_context)
+    sel_route = _safe_dict(selected_route)
+
+    passenger_name = pax_ctx.get("passenger_name", "Valued Passenger")
+    phone = pax_ctx.get("phone_number", "+60 12-345 6789")
+    flight_num = sel_route.get("flight_number", "CZ-3042")
+    airline = sel_route.get("airline", "Partner Carrier")
+    dep_time = sel_route.get("departure_time", "14:30")
 
     # Standard WhatsApp Business API Template Envelope
     payload = {
@@ -67,15 +82,15 @@ async def dispatch_hitl_to_n8n(
         "passenger": {
             "name": passenger_name,
             "phone_number": phone,
-            "loyalty_tier": passenger_context.get("loyalty_tier", "STANDARD")
+            "loyalty_tier": pax_ctx.get("loyalty_tier", "STANDARD")
         },
         "disruption": {
             "pnr": pnr,
             "recommended_flight": flight_num,
             "airline": airline,
             "departure_time": dep_time,
-            "cabin_class": selected_route.get("cabin_class", "Economy"),
-            "score": selected_route.get("score", 0.85)
+            "cabin_class": sel_route.get("cabin_class", "Economy"),
+            "score": sel_route.get("score", 0.85)
         },
         "whatsapp_template": {
             "header": f"✈️ SynapseAir Flight Disruption Alert ({pnr})",
@@ -200,10 +215,11 @@ async def answer_passenger_question(
     Handles conversational questions from the passenger in WhatsApp
     (e.g., 'Will my baggage be transferred?', 'What time is boarding?').
     """
+    flt_details = _safe_dict(flight_details)
     system_prompt = (
         f"You are the SynapseAir AI Operations Assistant replying to a passenger ({passenger_name}) on WhatsApp. "
-        f"The passenger's original flight was disrupted. Recommended alternative flight is {flight_details.get('flight_number')} "
-        f"({flight_details.get('airline')}) departing at {flight_details.get('departure_time')}. "
+        f"The passenger's original flight was disrupted. Recommended alternative flight is {flt_details.get('flight_number', 'alternative flight')} "
+        f"({flt_details.get('airline', 'partner carrier')}) departing at {flt_details.get('departure_time', 'scheduled time')}. "
         "Baggage is automatically transferred, seats are reserved, and meals are included. "
         "Keep your reply under 2 sentences, friendly, reassuring, and concise like a real WhatsApp support agent."
     )

@@ -43,9 +43,14 @@ def mask_pii(data: dict) -> dict:
 
 
 async def broadcast_event(thread_id: str, event_data: Dict[str, Any]):
-    """Broadcast an SSE event payload to all active client streams for thread_id (Redis-backed)."""
+    """Broadcast an SSE event payload to all active client streams for thread_id (Redis-backed) and WebSocket."""
     masked_event = mask_pii(event_data)
     await _redis_broadcast(thread_id, masked_event)
+    try:
+        from backend.services.websocket_manager import ws_manager
+        await ws_manager.send_json(thread_id, masked_event)
+    except Exception:
+        pass
 
 
 async def subscribe(thread_id: str):

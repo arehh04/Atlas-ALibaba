@@ -19,6 +19,20 @@ from backend.middleware.resilience import retry_with_backoff
 MAX_NODE_RETRIES = 2
 
 
+def _safe_state(st: Any) -> Dict[str, Any]:
+    if isinstance(st, dict):
+        return st
+    if isinstance(st, (list, tuple)):
+        for item in st:
+            if isinstance(item, dict):
+                return item
+    if hasattr(st, "values") and isinstance(st.values, dict):
+        return st.values
+    if hasattr(st, "dict") and callable(getattr(st, "dict")):
+        return st.dict()
+    return {}
+
+
 async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n_webhook_url: Optional[str] = None):
     """
     Executes LangGraph swarm with DeepSeek & Hermes LLM nodes, emitting SSE telemetry.
@@ -31,8 +45,9 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
     config = {"configurable": {"thread_id": thread_id}}
 
     # Persist disruption start to SQLite for history
-    event = initial_state.get("disruption_event", {})
-    passenger = initial_state.get("passenger_context", {})
+    init_st = _safe_state(initial_state)
+    event = _safe_state(init_st.get("disruption_event"))
+    passenger = _safe_state(init_st.get("passenger_context"))
     upsert_disruption(
         thread_id=thread_id,
         pnr=event.get("pnr", ""),
@@ -57,11 +72,32 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
         node_retry_count: Dict[str, int] = {}
 
         async for chunk in swarm_graph.astream(initial_state, config=config):
-            for node_name, node_output in chunk.items():
+            # Normalize chunk items whether chunk is dict or tuple/list
+            chunk_items = []
+            if isinstance(chunk, dict):
+                chunk_items = list(chunk.items())
+            elif isinstance(chunk, (list, tuple)):
+                if len(chunk) == 2 and isinstance(chunk[0], str):
+                    chunk_items = [(chunk[0], chunk[1])]
+                elif len(chunk) > 0 and isinstance(chunk[0], (list, tuple)) and len(chunk[0]) == 2:
+                    chunk_items = list(chunk)
+
+            for node_name, node_output in chunk_items:
+                if not isinstance(node_output, dict):
+                    if isinstance(node_output, (list, tuple)) and len(node_output) == 2 and isinstance(node_output[1], dict):
+                        node_output = node_output[1]
+                    else:
+                        continue
+
                 logs = node_output.get("execution_logs", [])
+                if not isinstance(logs, list):
+                    logs = [logs]
 
                 # Per-node error detection and retry tracking
                 for log in logs:
+                    if not isinstance(log, dict):
+                        log = {"message": str(log), "level": "INFO", "timestamp": datetime.now().isoformat()}
+
                     level = log.get("level", "INFO")
                     if level == "ERROR":
                         retries = node_retry_count.get(node_name, 0)
@@ -95,17 +131,21 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
                     })
 
         current_state = await swarm_graph.aget_state(config)
+        state_vals = _safe_state(getattr(current_state, "values", None))
 
         # Paused at interrupt_before (hitl_breakpoint)
         if current_state.next and "hitl_breakpoint" in current_state.next:
-            latest = current_state.values
-            selected = latest.get("selected_route") or {}
-            pnr = latest.get("disruption_event", {}).get("pnr", "PNR")
-            passenger_ctx = latest.get("passenger_context", {})
+            selected = _safe_state(state_vals.get("selected_route"))
+            event_obj = _safe_state(state_vals.get("disruption_event"))
+            pnr = event_obj.get("pnr", "PNR")
+            passenger_ctx = _safe_state(state_vals.get("passenger_context"))
 
             # Find DeepSeek WhatsApp message from execution logs if present
-            arbiter_log = next((l for l in latest.get("execution_logs", []) if l.get("node") == "arbiter"), None)
-            whatsapp_copy = arbiter_log.get("data", {}).get("whatsapp_copy") if arbiter_log else None
+            raw_logs = state_vals.get("execution_logs", [])
+            if not isinstance(raw_logs, list):
+                raw_logs = [raw_logs]
+            arbiter_log = next((l for l in raw_logs if isinstance(l, dict) and l.get("node") == "arbiter"), None)
+            whatsapp_copy = arbiter_log.get("data", {}).get("whatsapp_copy") if arbiter_log and isinstance(arbiter_log.get("data"), dict) else None
 
             # Dispatch to n8n WhatsApp Gateway
             n8n_receipt = await dispatch_hitl_to_n8n(
@@ -122,7 +162,7 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
                 thread_id=thread_id,
                 selected_route=selected,
                 hitl_status="PENDING",
-                financial_savings=selected.get("financial_savings"),
+                financial_savings=selected.get("financial_savings") if isinstance(selected, dict) else None,
             )
 
             await broadcast_event(thread_id, {
@@ -135,27 +175,31 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
                 "n8n_receipt": n8n_receipt
             })
         else:
-            ticket = current_state.values.get("ticket_confirmation")
-            selected = current_state.values.get("selected_route")
+            ticket = _safe_state(state_vals.get("ticket_confirmation"))
+            selected = _safe_state(state_vals.get("selected_route"))
+            event_obj = _safe_state(state_vals.get("disruption_event"))
+            pnr = event_obj.get("pnr", "PNR")
 
             # Update disruption record with final results
             update_disruption_result(
                 thread_id=thread_id,
                 selected_route=selected,
-                hitl_status=current_state.values.get("hitl_status", "BYPASSED"),
+                hitl_status=state_vals.get("hitl_status", "BYPASSED"),
                 ticket_confirmation=ticket,
-                financial_savings=selected.get("financial_savings") if selected else None,
+                financial_savings=selected.get("financial_savings") if isinstance(selected, dict) else None,
             )
 
             await broadcast_event(thread_id, {
                 "type": "WORKFLOW_COMPLETE",
                 "thread_id": thread_id,
                 "timestamp": datetime.now().isoformat(),
-                "message": f"✅ Workflow finished. Ticket issued via Atlas API for PNR {current_state.values.get('disruption_event', {}).get('pnr')}.",
+                "message": f"✅ Workflow finished. Ticket issued via Atlas API for PNR {pnr}.",
                 "ticket": ticket
             })
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         # Persist error state
         update_disruption_result(
             thread_id=thread_id,

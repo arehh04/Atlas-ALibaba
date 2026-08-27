@@ -113,18 +113,31 @@ def _calculate_ensemble_score(
     }
 
 
+def _safe_state(state: Any) -> Dict[str, Any]:
+    if isinstance(state, dict):
+        return state
+    if isinstance(state, (list, tuple)):
+        for item in state:
+            if isinstance(item, dict):
+                return item
+    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+        return state.dict()
+    return {}
+
+
 async def arbiter_node(state: AgentSwarmState) -> Dict[str, Any]:
     """
     Arbiter Agent Node: Scores routes using DeepSeek LLM Chain-of-Thought reasoning
     enhanced with multi-factor ensemble scoring from Baggage, Compensation, and MultiLeg agents.
     """
-    candidates: List[FlightRoute] = state.get("candidate_routes", [])
-    profile = state.get("passenger_context", {})
-    disruption = state.get("disruption_event", {})
-    sla_constraints = state.get("sla_constraints", {})
-    baggage_context = state.get("baggage_context", {}) or {}
-    compensation_result = state.get("compensation_result", {}) or {}
-    connecting_flights = state.get("connecting_flights", []) or []
+    st = _safe_state(state)
+    candidates: List[FlightRoute] = st.get("candidate_routes", [])
+    profile = st.get("passenger_context", {})
+    disruption = st.get("disruption_event", {})
+    sla_constraints = st.get("sla_constraints", {})
+    baggage_context = st.get("baggage_context", {}) or {}
+    compensation_result = st.get("compensation_result", {}) or {}
+    connecting_flights = st.get("connecting_flights", []) or []
 
     financial_profile = sla_constraints.get("financial_profile", {
         "airline_savings_usd": 280.0,

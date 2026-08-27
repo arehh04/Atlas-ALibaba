@@ -55,11 +55,13 @@ async def webhook_disruption(payload: DisruptionPayload, background_tasks: Backg
         "ticket_confirmation": None
     }
     
-    background_tasks.add_task(
-        run_swarm_pipeline,
-        thread_id=thread_id,
-        initial_state=initial_state,
-        n8n_webhook_url=payload.n8n_webhook_url
+    import asyncio
+    asyncio.create_task(
+        run_swarm_pipeline(
+            thread_id=thread_id,
+            initial_state=initial_state,
+            n8n_webhook_url=payload.n8n_webhook_url
+        )
     )
     
     return {
@@ -115,9 +117,30 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
         async def resume_graph():
             try:
                 async for chunk in swarm_graph.astream(None, config=config):
-                    for node_name, node_output in chunk.items():
+                    chunk_items = []
+                    if isinstance(chunk, dict):
+                        chunk_items = list(chunk.items())
+                    elif isinstance(chunk, (list, tuple)):
+                        if len(chunk) == 2 and isinstance(chunk[0], str):
+                            chunk_items = [(chunk[0], chunk[1])]
+                        elif len(chunk) > 0 and isinstance(chunk[0], (list, tuple)) and len(chunk[0]) == 2:
+                            chunk_items = list(chunk)
+
+                    for node_name, node_output in chunk_items:
+                        if not isinstance(node_output, dict):
+                            if isinstance(node_output, (list, tuple)) and len(node_output) == 2 and isinstance(node_output[1], dict):
+                                node_output = node_output[1]
+                            else:
+                                continue
+
                         logs = node_output.get("execution_logs", [])
+                        if not isinstance(logs, list):
+                            logs = [logs]
+
                         for log in logs:
+                            if not isinstance(log, dict):
+                                log = {"message": str(log), "level": "INFO", "timestamp": datetime.now().isoformat()}
+
                             await broadcast_event(thread_id, {
                                 "type": "AGENT_STEP",
                                 "thread_id": thread_id,
@@ -127,7 +150,8 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
                             })
                             
                 final_state = await swarm_graph.aget_state(config)
-                ticket = final_state.values.get("ticket_confirmation")
+                state_vals = final_state.values if isinstance(getattr(final_state, "values", None), dict) else {}
+                ticket = state_vals.get("ticket_confirmation")
                 await broadcast_event(thread_id, {
                     "type": "WORKFLOW_COMPLETE",
                     "thread_id": thread_id,
@@ -143,7 +167,8 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
                     "message": f"Resume error: {str(ex)}"
                 })
                 
-        background_tasks.add_task(resume_graph)
+        import asyncio
+        asyncio.create_task(resume_graph())
         return {
             "status": "RESUMED",
             "thread_id": thread_id,
