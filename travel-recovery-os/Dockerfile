@@ -8,26 +8,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for layer caching
-COPY requirements.txt .
+# Copy requirements from backend
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy all project code
 COPY . .
 
-# Set Python path to ensure module imports work seamlessly
+# Set Python path
 ENV PYTHONPATH=/app
 ENV PORT=7860
 
-# Create data directory for SQLite
+# Create data directory for SQLite checkpointer
 RUN mkdir -p /app/data
 
-# Expose Hugging Face (7860), Standard (8000), and Dev (8001) ports
+# Expose ports: 7860 (Hugging Face / Default), 8000 (Docker), 8001 (Dev)
 EXPOSE 7860 8000 8001
 
-# Health check
+# Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT:-7860}/health || exit 1
 
-# Run with uvicorn listening on dynamic $PORT (default 7860 for HF Spaces)
+# Start Uvicorn on dynamic port
 CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
