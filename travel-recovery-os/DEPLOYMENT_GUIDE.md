@@ -124,3 +124,4 @@ python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
 | **System Status** | Open `https://<backend-url>/api/system/status` | `{"status": "HEALTHY", ...}` |
 | **WebSocket Stream** | Launch SQ108 scenario on Frontend | Telemetry logs stream in real time |
 | **WhatsApp HITL** | Launch MH128 scenario $\rightarrow$ click Accept | Graph resumes and e-ticket is rendered |
+

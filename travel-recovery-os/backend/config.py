@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     N8N_API_URL: str = "http://127.0.0.1:5678"
     N8N_API_KEY: Optional[str] = ""
     N8N_WEBHOOK_URL: Optional[str] = ""
-    N8N_CONSENSUS_CALLBACK_URL: str = "http://127.0.0.1:8000/webhook/consensus"
+    N8N_CONSENSUS_CALLBACK_URL: str = "http://127.0.0.1:8001/webhook/consensus"
 
     # ── Atlas Official GDS API (Sandbox & Production) ──────────────────
     ATLAS_ENV: Literal["sandbox", "production"] = "sandbox"

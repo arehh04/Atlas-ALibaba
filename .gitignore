@@ -1,4 +1,4 @@
-﻿# Environment & API Keys
+# Environment & API Keys
 **/.env
 **/.env.*
 !**/.env.example
@@ -29,3 +29,4 @@
 Thumbs.db
 .vscode/
 .idea/
+.qoder/
