@@ -1,0 +1,80 @@
+{
+  "name": "SynapseAir - WhatsApp HITL Rebooking Swarm Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "synapseair-hitl",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "SynapseAir Disruption Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "webhook-synapseair-trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare WhatsApp Business API interactive message\nconst item = $json;\nconst phone = item.passenger?.phone_number || '+60123456789';\nconst threadId = item.thread_id;\nconst flight = item.disruption?.recommended_flight;\nconst dep = item.disruption?.departure_time;\nconst body = item.whatsapp_template?.body || `Flight canceled. We reserved seat on ${flight} departing ${dep}.`;\n\nreturn {\n  recipient_phone: phone,\n  message_payload: {\n    messaging_product: 'whatsapp',\n    to: phone,\n    type: 'interactive',\n    interactive: {\n      type: 'button',\n      header: {\n        type: 'text',\n        text: item.whatsapp_template?.header || '✈️ SynapseAir Flight Disruption Alert'\n      },\n      body: {\n        text: body\n      },\n      footer: {\n        text: `Thread: ${threadId} • Powered by DeepSeek + Atlas`\n      },\n      action: {\n        buttons: [\n          {\n            type: 'reply',\n            reply: {\n              id: `APPROVE:${threadId}`,\n              title: '✓ 1-Click Accept'\n            }\n          },\n          {\n            type: 'reply',\n            reply: {\n              id: `REJECT:${threadId}`,\n              title: '✕ Decline / Re-route'\n            }\n          }\n        ]\n      }\n    }\n  }\n};"
+      },
+      "name": "Format WhatsApp Interactive Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        470,
+        300
+      ],
+      "id": "code-format-whatsapp"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.consensus_callback?.url || 'http://127.0.0.1:8000/webhook/consensus' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"thread_id\": \"{{ $json.thread_id }}\",\n  \"action\": \"APPROVE\",\n  \"notes\": \"Approved via WhatsApp 1-Click Reply\"\n}",
+        "options": {}
+      },
+      "name": "Forward WhatsApp Reply to SynapseAir",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ],
+      "id": "http-forward-consensus"
+    }
+  ],
+  "connections": {
+    "SynapseAir Disruption Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format WhatsApp Interactive Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format WhatsApp Interactive Message": {
+      "main": [
+        [
+          {
+            "node": "Forward WhatsApp Reply to SynapseAir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

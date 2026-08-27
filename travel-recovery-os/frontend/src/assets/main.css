@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F8F7FC;
+    color: #1E1B2E;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Soft ambient gradient on the app root */
+  #app {
+    position: relative;
+    min-height: 100vh;
+  }
+  #app::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(138, 79, 255, 0.06), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(79, 168, 255, 0.05), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #app > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* ── Friendly Card System ────────────────────────────────────── */
+.ops-card {
+  background-color: #FFFFFF;
+  border: 1px solid #EEEAF5;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgba(30, 27, 46, 0.04), 0 4px 12px rgba(138, 79, 255, 0.03);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.ops-card:hover {
+  box-shadow: 0 2px 8px rgba(30, 27, 46, 0.06), 0 8px 24px rgba(138, 79, 255, 0.06);
+  border-color: #DDD8EB;
+}
+
+.ops-card-nested {
+  background-color: #F8F7FC;
+  border: 1px solid #EEEAF5;
+  border-radius: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+/* ── Brand Gradient Text ─────────────────────────────────────── */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #8A4FFF 0%, #5B7FFF 50%, #4FA8FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Brand Gradient Background ───────────────────────────────── */
+.bg-brand-gradient {
+  background: linear-gradient(135deg, #8A4FFF 0%, #5B7FFF 50%, #4FA8FF 100%);
+}
+
+/* ── Soft Shimmer ────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ── Entrance Animations ─────────────────────────────────────── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ── Soft Pulse Ring ─────────────────────────────────────────── */
+@keyframes pulse-ring-soft {
+  0% { box-shadow: 0 0 0 0 rgba(138, 79, 255, 0.3); }
+  70% { box-shadow: 0 0 0 10px rgba(138, 79, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(138, 79, 255, 0); }
+}
+.animate-pulse-ring {
+  animation: pulse-ring-soft 2s ease-out infinite;
+}
+
+/* ── Boarding Pass Perforated Edge ───────────────────────────── */
+.boarding-pass-edge {
+  position: relative;
+}
+.boarding-pass-edge::before,
+.boarding-pass-edge::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.boarding-pass-edge::before { left: -9px; }
+.boarding-pass-edge::after { right: -9px; }
+
+/* ── Soft Scanline for Terminal ──────────────────────────────── */
+.scanline-overlay {
+  position: relative;
+  overflow: hidden;
+}
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(138, 79, 255, 0.01) 2px,
+    rgba(138, 79, 255, 0.01) 4px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Friendly Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F3F1FA;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDD8EB;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8B2CC;
+}
+
+/* ── Selection ───────────────────────────────────────────────── */
+::selection {
+  background: rgba(138, 79, 255, 0.2);
+  color: #1E1B2E;
+}
+
+/* ── Mobile Responsive Overrides ────────────────────────────── */
+@media (max-width: 640px) {
+  /* Smaller boarding pass cutouts on mobile */
+  .boarding-pass-edge::before,
+  .boarding-pass-edge::after {
+    width: 12px;
+    height: 12px;
+  }
+  .boarding-pass-edge::before { left: -6px; }
+  .boarding-pass-edge::after { right: -6px; }
+
+  /* Reduce card hover lift on touch devices */
+  .ops-card:hover {
+    transform: none;
+  }
+
+  /* Tighter card padding override */
+  .ops-card {
+    border-radius: 1rem;
+  }
+
+  /* Prevent horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+  }
+}
+
+/* ── Touch Device Optimizations ─────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable hover effects that don't work on touch */
+  .ops-card:hover {
+    box-shadow: 0 1px 3px rgba(30, 27, 46, 0.04), 0 4px 12px rgba(138, 79, 255, 0.03);
+    border-color: #EEEAF5;
+  }
+}

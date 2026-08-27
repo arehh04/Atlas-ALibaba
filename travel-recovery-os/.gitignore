@@ -1,0 +1,52 @@
+# ────────────────────────────────────────────────────────────────────────────
+# SynapseAir .gitignore
+# ────────────────────────────────────────────────────────────────────────────
+
+# ── Python / Backend ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Environment / Secrets ──────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+backend/.env
+backend/.env.local
+
+# ── Frontend / Node ────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# ── OS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Logs & Databases ───────────────────────────────────────────────────────
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# ── Qoder / Tooling Cache ─────────────────────────────────────────────────
+.qoder/

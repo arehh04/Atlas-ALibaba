@@ -1,0 +1,57 @@
+name: Deploy SynapseAir
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            git pull origin main
+            docker compose pull
+            docker compose up -d --build
+
+      - name: Wait for health check
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            for i in $(seq 1 30); do
+              STATUS=$(curl -sf http://localhost:8000/health 2>/dev/null | grep -c healthy || true)
+              if [ "$STATUS" = "1" ]; then
+                echo "Backend is healthy!"
+                exit 0
+              fi
+              echo "Waiting for backend... ($i/30)"
+              sleep 5
+            done
+            echo "Backend did not become healthy in time"
+            docker compose logs --tail=50 backend
+            exit 1
+
+      - name: Smoke test
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            curl -sf http://localhost:8000/api/system/status > /dev/null
+            curl -sf http://localhost:8000/api/history > /dev/null
+            echo "Smoke tests passed"
