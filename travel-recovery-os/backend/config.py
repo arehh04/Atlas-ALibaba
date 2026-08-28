@@ -43,7 +43,6 @@ class Settings(BaseSettings):
     # ── Application ──────────────────────────────────────────────────────
     APP_NAME: str = "SynapseAir Travel Recovery OS"
     DEBUG: bool = True
-    ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     ENVIRONMENT: Literal["development", "staging", "production", "test"] = "development"
     SYNAPSE_API_SECRET: str = "default-insecure-secret-change-in-prod"
     REQUIRE_AUTH: bool = False
