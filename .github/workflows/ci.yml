@@ -32,7 +32,7 @@ jobs:
         env:
           ENVIRONMENT: test
           PYTHONPATH: .
-          SYNAPSE_API_SECRET: default-insecure-secret-change-in-prod
+          SYNAPSE_API_SECRET: test-secret-for-ci
         run: |
           python -m pytest backend/tests/test_qa_suite.py backend/test_swarm.py -v
 
