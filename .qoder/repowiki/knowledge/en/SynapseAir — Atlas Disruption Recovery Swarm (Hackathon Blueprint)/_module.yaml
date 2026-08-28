@@ -1,0 +1,11 @@
+schema_version: 1
+module_path: ""
+title: SynapseAir — Atlas Disruption Recovery Swarm (Hackathon Blueprint)
+scope:
+    - blueprint.md
+    - .gitignore
+    - Atlas_UAT_Environment (2).json
+    - Atlas_UAT_HappyPath.postman_collection (2).json
+source_files: []
+depends_on: []
+related_to: []

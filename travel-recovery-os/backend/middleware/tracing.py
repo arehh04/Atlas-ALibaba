@@ -12,28 +12,29 @@ Gracefully degrades to no-ops when the ``opentelemetry`` packages are not instal
 
 import functools
 import os
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Optional
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Optional OpenTelemetry imports
 # ---------------------------------------------------------------------------
 try:
     from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import (
         BatchSpanProcessor,
         ConsoleSpanExporter,
     )
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
     _OTEL_AVAILABLE = True
 except ImportError:
     _OTEL_AVAILABLE = False
 
-_tracer: Optional[Any] = None
+_tracer: Any | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -41,9 +42,9 @@ _tracer: Optional[Any] = None
 # ---------------------------------------------------------------------------
 
 def init_tracing(
-    app: Optional[Any] = None,
+    app: Any | None = None,
     service_name: str = "synapseair",
-    otlp_endpoint: Optional[str] = None,
+    otlp_endpoint: str | None = None,
 ) -> None:
     """
     Set up the global TracerProvider.
@@ -84,7 +85,7 @@ def init_tracing(
 # ---------------------------------------------------------------------------
 
 @contextmanager
-def trace_span(name: str, attributes: Optional[Dict[str, Any]] = None):
+def trace_span(name: str, attributes: dict[str, Any] | None = None):
     """
     Context manager that creates an OTel span.
 
@@ -101,7 +102,7 @@ def trace_span(name: str, attributes: Optional[Dict[str, Any]] = None):
         yield span
 
 
-def get_trace_context() -> Dict[str, str]:
+def get_trace_context() -> dict[str, str]:
     """
     Return ``{"trace_id": ..., "span_id": ...}`` for the current active span.
 

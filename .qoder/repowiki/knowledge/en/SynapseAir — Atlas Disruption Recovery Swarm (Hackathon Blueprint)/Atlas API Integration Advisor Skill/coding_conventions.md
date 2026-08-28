@@ -1,0 +1,6 @@
+- Each booking flow is documented as a step-by-step sequence with explicit endpoint names, HTTP method, headers, request JSON bodies, and key response fields, repeated consistently across SKILL.md and the quick-reference document.
+- Client scenarios are classified into a fixed set (Full Booking OTA, Get Offer Booker, Price Comparison, Ancillary Only, Hybrid) and mapped to a recommended flow before any implementation guidance is given.
+- Critical operational constraints are highlighted with explicit CHECKPOINT markers (e.g., confirming flow selection, UAT completion, ancillary prerequisites) placed between decision branches in the workflow.
+- Error handling follows a uniform pattern: each endpoint section lists status codes in a table with meaning and prescribed client action, and transient errors are grouped under a shared exponential backoff retry strategy.
+- FR (Ryanair) special-case logic is isolated and called out explicitly (orderCommit.do step, locale field requirement) rather than mixed into generic flow descriptions.
+- Reference material is split by topic into the `references/` subdirectory and cross-linked from SKILL.md via section numbers, keeping the main skill file focused on process while detailed specs live in dedicated docs.

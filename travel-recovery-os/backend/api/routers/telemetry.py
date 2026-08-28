@@ -1,10 +1,10 @@
 import asyncio
 import json
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import StreamingResponse
 
-from backend.services.telemetry_service import subscribe, unsubscribe, get_event_history
+from backend.services.telemetry_service import get_event_history, subscribe, unsubscribe
 from backend.swarm import swarm_graph
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(tags=["telemetry"])
 

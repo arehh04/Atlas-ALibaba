@@ -7,9 +7,9 @@ Agents can publish messages to specific recipients or broadcast to all.
 In production, this can be backed by Redis Pub/Sub for cross-process messaging.
 """
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional
 import asyncio
+from datetime import datetime
+from typing import Any
 
 try:
     from ..state import AgentMessage
@@ -20,7 +20,7 @@ except (ImportError, ValueError):
 # ---------------------------------------------------------------------------
 # In-Memory Message Store
 # ---------------------------------------------------------------------------
-_message_store: Dict[str, List[AgentMessage]] = {}  # thread_id -> messages
+_message_store: dict[str, list[AgentMessage]] = {}  # thread_id -> messages
 _lock = asyncio.Lock()
 
 
@@ -29,7 +29,7 @@ async def publish_message(
     from_agent: str,
     to_agent: str,
     message_type: str,
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     correlation_id: str = "",
 ) -> AgentMessage:
     """
@@ -66,8 +66,8 @@ async def publish_message(
 async def get_messages_for_agent(
     thread_id: str,
     agent_name: str,
-    message_type: Optional[str] = None,
-) -> List[AgentMessage]:
+    message_type: str | None = None,
+) -> list[AgentMessage]:
     """
     Retrieves all messages addressed to a specific agent in a thread.
 
@@ -90,7 +90,7 @@ async def get_messages_for_agent(
         return result
 
 
-async def get_all_messages(thread_id: str) -> List[AgentMessage]:
+async def get_all_messages(thread_id: str) -> list[AgentMessage]:
     """Returns all messages for a thread."""
     async with _lock:
         return list(_message_store.get(thread_id, []))
@@ -102,6 +102,6 @@ async def clear_messages(thread_id: str):
         _message_store.pop(thread_id, None)
 
 
-def get_message_store() -> Dict[str, List[AgentMessage]]:
+def get_message_store() -> dict[str, list[AgentMessage]]:
     """Returns the raw message store (for inspection/debugging)."""
     return _message_store

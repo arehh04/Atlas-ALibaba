@@ -9,12 +9,17 @@ Responsible for:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 try:
-    from state import AgentSwarmState, BaggageContext, ExecutionLog, AgentMessage
+    from state import AgentMessage, AgentSwarmState, BaggageContext, ExecutionLog
 except ImportError:
-    from backend.state import AgentSwarmState, BaggageContext, ExecutionLog, AgentMessage
+    from backend.state import (
+        AgentMessage,
+        AgentSwarmState,
+        BaggageContext,
+        ExecutionLog,
+    )
 
 
 # Known interline baggage agreements (mock data for demonstration)
@@ -46,7 +51,7 @@ def _check_interline_agreement(original_airline: str, new_airline: str) -> bool:
 
 def _estimate_transfer_time(
     checked_bags: int,
-    special_items: List[str],
+    special_items: list[str],
     interline_eligible: bool,
     layovers: int,
 ) -> int:
@@ -61,19 +66,19 @@ def _estimate_transfer_time(
     return base_time + bag_time + special_time + layover_overhead
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def baggage_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def baggage_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Baggage Agent Node: Evaluates baggage transfer feasibility for the disrupted passenger.
     """
@@ -88,11 +93,8 @@ async def baggage_node(state: AgentSwarmState) -> Dict[str, Any]:
     # Higher tier passengers get more generous baggage allowances
     if tier == "PLATINUM":
         checked_bags = 3
-        special_items: List[str] = []
-    elif tier == "GOLD":
-        checked_bags = 2
-        special_items = []
-    elif tier == "SILVER":
+        special_items: list[str] = []
+    elif tier == "GOLD" or tier == "SILVER":
         checked_bags = 2
         special_items = []
     else:

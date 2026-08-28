@@ -1,0 +1,1 @@
+Repository blueprint and UAT assets for the SynapseAir hackathon project that orchestrates LangGraph agents to recover from flight disruptions by querying the Atlas Sandbox API and prompting human-in-the-loop rebooking via n8n.

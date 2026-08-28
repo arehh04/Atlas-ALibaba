@@ -1,0 +1,3 @@
+- LangGraph state is defined as a single `AgentSwarmState` TypedDict and persisted via `MemorySaver` so threads can be paused at HITL breakpoints and resumed on consensus callbacks.
+- Agents are implemented as isolated node functions under `agents/` (sentinel, profile, scout, arbiter) and composed into a `StateGraph` in `swarm.py` rather than monolithic controllers.
+- External system calls (Atlas Sandbox, n8n webhooks) are wrapped in dedicated tool modules under `tools/` so agent nodes remain testable and mockable.

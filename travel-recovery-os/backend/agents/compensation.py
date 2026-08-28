@@ -9,7 +9,7 @@ Responsible for:
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 try:
     from state import AgentSwarmState, CompensationResult, ExecutionLog
@@ -90,25 +90,25 @@ def _is_extraordinary_circumstance(reason: str) -> bool:
     return any(kw in reason_lower for kw in extraordinary_keywords)
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def compensation_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def compensation_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Compensation Agent Node: Calculates passenger rights and compensation eligibility.
     """
     st = _safe_state(state)
     disruption = st.get("disruption_event", {})
-    passenger = st.get("passenger_context", {})
+    st.get("passenger_context", {})
 
     origin = disruption.get("origin", "KUL")
     destination = disruption.get("destination", "HGH")

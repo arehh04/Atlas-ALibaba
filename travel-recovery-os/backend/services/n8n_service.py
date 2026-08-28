@@ -9,38 +9,47 @@ Provides:
 Resilience: Webhook dispatch wrapped with retry and n8n circuit breaker.
 """
 
-from datetime import datetime
 import time
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from typing import Any
+
 import httpx
 from openai import AsyncOpenAI
 
 try:
     from ..config import settings
-    from ..middleware.resilience import retry_with_backoff, CircuitBreakerOpen, n8n_breaker
-    from ..store.event_store import insert_n8n_event, get_n8n_events
+    from ..middleware.resilience import (
+        CircuitBreakerOpen,
+        n8n_breaker,
+        retry_with_backoff,
+    )
+    from ..store.event_store import get_n8n_events, insert_n8n_event
 except (ImportError, ValueError):
     from config import settings
-    from middleware.resilience import retry_with_backoff, CircuitBreakerOpen, n8n_breaker
-    from store.event_store import insert_n8n_event, get_n8n_events
+    from middleware.resilience import (
+        CircuitBreakerOpen,
+        n8n_breaker,
+        retry_with_backoff,
+    )
+    from store.event_store import get_n8n_events, insert_n8n_event
 
 
 # ---------------------------------------------------------------------------
 # Public API: get event log (from SQLite)
 # ---------------------------------------------------------------------------
-def get_n8n_event_log() -> List[Dict[str, Any]]:
+def get_n8n_event_log() -> list[dict[str, Any]]:
     """Returns all recorded n8n webhook interactions from SQLite."""
     return get_n8n_events(limit=200)
 
 
-def _safe_dict(val: Any) -> Dict[str, Any]:
+def _safe_dict(val: Any) -> dict[str, Any]:
     if isinstance(val, dict):
         return val
     if isinstance(val, (list, tuple)):
         for item in val:
             if isinstance(item, dict):
                 return item
-    if hasattr(val, "dict") and callable(getattr(val, "dict")):
+    if hasattr(val, "dict") and callable(val.dict):
         return val.dict()
     return {}
 
@@ -51,11 +60,11 @@ def _safe_dict(val: Any) -> Dict[str, Any]:
 async def dispatch_hitl_to_n8n(
     thread_id: str,
     pnr: str,
-    passenger_context: Dict[str, Any],
-    selected_route: Dict[str, Any],
-    whatsapp_message: Optional[str] = None,
-    custom_n8n_url: Optional[str] = None
-) -> Dict[str, Any]:
+    passenger_context: dict[str, Any],
+    selected_route: dict[str, Any],
+    whatsapp_message: str | None = None,
+    custom_n8n_url: str | None = None
+) -> dict[str, Any]:
     """
     Dispatches a structured HITL notification payload to an external n8n webhook
     and records it in the durable SQLite event store.
@@ -209,7 +218,7 @@ async def answer_passenger_question(
     passenger_message: str,
     passenger_name: str,
     pnr: str,
-    flight_details: Dict[str, Any]
+    flight_details: dict[str, Any]
 ) -> str:
     """
     Handles conversational questions from the passenger in WhatsApp

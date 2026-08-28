@@ -8,15 +8,23 @@ Includes PII masking for passenger data before broadcast.
 
 import copy
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from backend.store.redis_broker import (
     broadcast_event as _redis_broadcast,
+)
+from backend.store.redis_broker import (
     get_event_history as _redis_history,
-    subscribe_thread as _redis_subscribe,
-    unsubscribe_thread as _redis_unsubscribe,
-    get_fallback_listeners,
+)
+from backend.store.redis_broker import (
     get_fallback_history,
+    get_fallback_listeners,
+)
+from backend.store.redis_broker import (
+    subscribe_thread as _redis_subscribe,
+)
+from backend.store.redis_broker import (
+    unsubscribe_thread as _redis_unsubscribe,
 )
 
 
@@ -25,9 +33,9 @@ def mask_pii(data: dict) -> dict:
     masked = copy.deepcopy(data)
 
     def apply_mask(ctx):
-        if "phone_number" in ctx and ctx["phone_number"]:
+        if ctx.get("phone_number"):
             ctx["phone_number"] = re.sub(r'\d', '*', ctx["phone_number"][:-4]) + ctx["phone_number"][-4:]
-        if "passenger_name" in ctx and ctx["passenger_name"]:
+        if ctx.get("passenger_name"):
             parts = ctx["passenger_name"].split()
             if len(parts) > 1:
                 ctx["passenger_name"] = f"{parts[0]} {parts[-1][0]}***"
@@ -42,7 +50,7 @@ def mask_pii(data: dict) -> dict:
     return masked
 
 
-async def broadcast_event(thread_id: str, event_data: Dict[str, Any]):
+async def broadcast_event(thread_id: str, event_data: dict[str, Any]):
     """Broadcast an SSE event payload to all active client streams for thread_id (Redis-backed) and WebSocket."""
     masked_event = mask_pii(event_data)
     await _redis_broadcast(thread_id, masked_event)
@@ -63,7 +71,7 @@ async def unsubscribe(thread_id: str, queue):
     await _redis_unsubscribe(thread_id, queue)
 
 
-async def get_event_history(thread_id: str) -> List[Dict[str, Any]]:
+async def get_event_history(thread_id: str) -> list[dict[str, Any]]:
     """Retrieves persisted event history for a thread."""
     return await _redis_history(thread_id)
 

@@ -1,0 +1,1 @@
+The project is scaffolded per `blueprint.md` into `/travel-recovery-os/{backend,frontend}`; the included `Atlas_UAT_Environment.json` and `Atlas_UAT_HappyPath.postman_collection.json` provide preconfigured Postman environment/collection for validating the Atlas Sandbox integration against the UAT sandbox.

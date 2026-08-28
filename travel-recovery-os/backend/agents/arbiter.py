@@ -9,14 +9,14 @@ Phase 2 Enhancements:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 try:
-    from state import AgentSwarmState, FlightRoute, ExecutionLog
     from services.llm_service import evaluate_routes_with_deepseek
+    from state import AgentSwarmState, ExecutionLog, FlightRoute
 except ImportError:
-    from backend.state import AgentSwarmState, FlightRoute, ExecutionLog
     from backend.services.llm_service import evaluate_routes_with_deepseek
+    from backend.state import AgentSwarmState, ExecutionLog, FlightRoute
 
 
 # ---------------------------------------------------------------------------
@@ -32,12 +32,12 @@ WEIGHTS = {
 
 
 def _calculate_ensemble_score(
-    route: Dict[str, Any],
+    route: dict[str, Any],
     base_score: float,
-    baggage_context: Dict[str, Any],
-    compensation_result: Dict[str, Any],
-    connecting_flights: List[Dict[str, Any]],
-) -> Dict[str, Any]:
+    baggage_context: dict[str, Any],
+    compensation_result: dict[str, Any],
+    connecting_flights: list[dict[str, Any]],
+) -> dict[str, Any]:
     """
     Calculates a multi-factor weighted ensemble score for a flight route.
 
@@ -47,7 +47,7 @@ def _calculate_ensemble_score(
     - confidence_high: Upper bound of 90% confidence interval
     - scoring_breakdown: Per-criteria sub-scores
     """
-    breakdown: Dict[str, float] = {}
+    breakdown: dict[str, float] = {}
 
     # 1. Base score (from DeepSeek or deterministic arbiter)
     breakdown["base_score"] = base_score
@@ -58,7 +58,7 @@ def _calculate_ensemble_score(
 
     # 3. Baggage feasibility score
     baggage_transfer_time = baggage_context.get("estimated_transfer_time_minutes", 20)
-    layover_hours = route.get("layovers", 0) * 2.0  # Rough estimate
+    route.get("layovers", 0) * 2.0  # Rough estimate
     if baggage_context.get("interline_eligible", True):
         baggage_score = min(1.0, max(0.3, 1.0 - (baggage_transfer_time / 120.0)))
     else:
@@ -113,25 +113,25 @@ def _calculate_ensemble_score(
     }
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def arbiter_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def arbiter_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Arbiter Agent Node: Scores routes using DeepSeek LLM Chain-of-Thought reasoning
     enhanced with multi-factor ensemble scoring from Baggage, Compensation, and MultiLeg agents.
     """
     st = _safe_state(state)
-    candidates: List[FlightRoute] = st.get("candidate_routes", [])
+    candidates: list[FlightRoute] = st.get("candidate_routes", [])
     profile = st.get("passenger_context", {})
     disruption = st.get("disruption_event", {})
     sla_constraints = st.get("sla_constraints", {})
@@ -158,7 +158,7 @@ async def arbiter_node(state: AgentSwarmState) -> Dict[str, Any]:
     }
 
     # 2. Update candidate flight objects with ensemble scores
-    updated_candidates: List[FlightRoute] = []
+    updated_candidates: list[FlightRoute] = []
     for route in candidates:
         r_copy = dict(route)
         flt_no = r_copy.get("flight_number")

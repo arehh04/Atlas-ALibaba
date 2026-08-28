@@ -12,8 +12,7 @@ import os
 import sqlite3
 import threading
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -109,7 +108,7 @@ def insert_n8n_event(
     status: str,
     target_url: str = "",
     latency_ms: int = 0,
-    payload: Optional[Dict[str, Any]] = None,
+    payload: dict[str, Any] | None = None,
     response_body: str = "",
     error: str = "",
     event_type: str = "webhook",
@@ -141,7 +140,7 @@ def insert_n8n_event(
             conn.close()
 
 
-def get_n8n_events(thread_id: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+def get_n8n_events(thread_id: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
     """Retrieves n8n events, optionally filtered by thread_id."""
     with _db_lock:
         conn = _get_connection()
@@ -205,10 +204,10 @@ def upsert_disruption(
 
 def update_disruption_result(
     thread_id: str,
-    selected_route: Optional[Dict[str, Any]] = None,
+    selected_route: dict[str, Any] | None = None,
     hitl_status: str = "",
-    ticket_confirmation: Optional[Dict[str, Any]] = None,
-    financial_savings: Optional[Dict[str, Any]] = None,
+    ticket_confirmation: dict[str, Any] | None = None,
+    financial_savings: dict[str, Any] | None = None,
     error_state: str = "",
 ):
     """Updates a disruption record with final results."""
@@ -242,10 +241,10 @@ def update_disruption_result(
 def get_disruptions(
     limit: int = 50,
     offset: int = 0,
-    airline: Optional[str] = None,
-    loyalty_tier: Optional[str] = None,
-    status: Optional[str] = None,
-) -> List[Dict[str, Any]]:
+    airline: str | None = None,
+    loyalty_tier: str | None = None,
+    status: str | None = None,
+) -> list[dict[str, Any]]:
     """Retrieves paginated disruption history with optional filters."""
     with _db_lock:
         conn = _get_connection()
@@ -272,7 +271,7 @@ def get_disruptions(
             conn.close()
 
 
-def get_disruption_by_thread(thread_id: str) -> Optional[Dict[str, Any]]:
+def get_disruption_by_thread(thread_id: str) -> dict[str, Any] | None:
     """Retrieves a single disruption record by thread_id."""
     with _db_lock:
         conn = _get_connection()
@@ -285,7 +284,7 @@ def get_disruption_by_thread(thread_id: str) -> Optional[Dict[str, Any]]:
             conn.close()
 
 
-def get_disruption_stats() -> Dict[str, Any]:
+def get_disruption_stats() -> dict[str, Any]:
     """Returns aggregate analytics across all disruptions."""
     with _db_lock:
         conn = _get_connection()

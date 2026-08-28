@@ -7,14 +7,15 @@ Calculates dynamic SLA constraints and financial liability metrics based on:
 3. Alliance rules (Direct flight requirements, cabin class eligibility, compensation budget)
 """
 
-from typing import Any, Dict
+from typing import Any
+
 try:
     from state import AgentSwarmState, ExecutionLog
 except ImportError:
     from backend.state import AgentSwarmState, ExecutionLog
 
 
-def derive_financial_arbitrage(tier: str, delay_minutes: int) -> Dict[str, float]:
+def derive_financial_arbitrage(tier: str, delay_minutes: int) -> dict[str, float]:
     """Dynamically calculates airline liability and hotel SLA avoidance costs."""
     tier_upper = (tier or "STANDARD").upper()
     delay_hours = max(1.0, delay_minutes / 60.0)
@@ -43,19 +44,19 @@ def derive_financial_arbitrage(tier: str, delay_minutes: int) -> Dict[str, float
     }
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def profile_agent_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def profile_agent_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Profile Agent: Evaluates loyalty SLA rules and financial liabilities.
     """

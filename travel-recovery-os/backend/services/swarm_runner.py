@@ -6,20 +6,19 @@ Implements per-node retry logic and structured error recovery.
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
-from backend.state import AgentSwarmState
-from backend.swarm import swarm_graph
 from backend.services.n8n_service import dispatch_hitl_to_n8n
 from backend.services.telemetry_service import broadcast_event
-from backend.store.event_store import upsert_disruption, update_disruption_result
-from backend.middleware.resilience import retry_with_backoff
+from backend.state import AgentSwarmState
+from backend.store.event_store import update_disruption_result, upsert_disruption
+from backend.swarm import swarm_graph
 
 # Maximum per-node retries before escalating
 MAX_NODE_RETRIES = 2
 
 
-def _safe_state(st: Any) -> Dict[str, Any]:
+def _safe_state(st: Any) -> dict[str, Any]:
     if isinstance(st, dict):
         return st
     if isinstance(st, (list, tuple)):
@@ -28,12 +27,12 @@ def _safe_state(st: Any) -> Dict[str, Any]:
                 return item
     if hasattr(st, "values") and isinstance(st.values, dict):
         return st.values
-    if hasattr(st, "dict") and callable(getattr(st, "dict")):
+    if hasattr(st, "dict") and callable(st.dict):
         return st.dict()
     return {}
 
 
-async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n_webhook_url: Optional[str] = None):
+async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n_webhook_url: str | None = None):
     """
     Executes LangGraph swarm with DeepSeek & Hermes LLM nodes, emitting SSE telemetry.
 
@@ -65,11 +64,11 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
         "type": "WORKFLOW_START",
         "thread_id": thread_id,
         "timestamp": datetime.now().isoformat(),
-        "message": f"🚀 SynapseAir Swarm initiated (DeepSeek Reasoning + Hermes Parser)."
+        "message": "🚀 SynapseAir Swarm initiated (DeepSeek Reasoning + Hermes Parser)."
     })
 
     try:
-        node_retry_count: Dict[str, int] = {}
+        node_retry_count: dict[str, int] = {}
 
         async for chunk in swarm_graph.astream(initial_state, config=config):
             # Normalize chunk items whether chunk is dict or tuple/list
@@ -169,7 +168,7 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
                 "type": "HITL_REQUIRED",
                 "thread_id": thread_id,
                 "timestamp": datetime.now().isoformat(),
-                "message": f"⏳ Rebooking requires passenger confirmation. Dispatched to n8n WhatsApp Gateway.",
+                "message": "⏳ Rebooking requires passenger confirmation. Dispatched to n8n WhatsApp Gateway.",
                 "selected_route": selected,
                 "pnr": pnr,
                 "n8n_receipt": n8n_receipt
@@ -211,5 +210,5 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
             "type": "WORKFLOW_ERROR",
             "thread_id": thread_id,
             "timestamp": datetime.now().isoformat(),
-            "message": f"Swarm execution error: {str(e)}"
+            "message": f"Swarm execution error: {e!s}"
         })

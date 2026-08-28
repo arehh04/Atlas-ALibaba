@@ -32,10 +32,10 @@ Hugging Face Spaces provides free 2-vCPU / 16GB RAM container hosting with full 
 7. Under **Settings** $\rightarrow$ **Variables and secrets**, add your environment variables:
    * `DEEPSEEK_API_KEY`: *(Optional - system includes fallback mocks if omitted)*
    * `DEEPSEEK_MODEL`: `deepseek-v4-flash`
-   * `SYNAPSE_API_SECRET`: `default-insecure-secret-change-in-prod`
+   * `SYNAPSE_API_SECRET`: *(generate a strong random secret — do NOT use the default placeholder)*
    * `ENVIRONMENT`: `production`
-   * `ATLAS_CLIENT_ID`: `CTR12752_api_1`
-   * `ATLAS_CLIENT_SECRET`: `sandbox-sk-CTR12752_api_1`
+   * `ATLAS_CLIENT_ID`: *(your Atlas client ID)*
+   * `ATLAS_CLIENT_SECRET`: *(your Atlas client secret)*
    * `ATLAS_BASE_URL`: `https://sandbox.atriptech.com`
 8. Push the repository to your Hugging Face Space Git remote (or use the web UI upload):
    ```bash
@@ -60,7 +60,7 @@ Vercel provides edge delivery with automatic CI/CD on every Git push.
    * **Output Directory**: `dist`
 3. Expand **Environment Variables** and add:
    * `VITE_API_BASE_URL`: `https://YOUR_USERNAME-synapseair-backend.hf.space` (or your backend domain)
-   * `VITE_API_TOKEN`: `default-insecure-secret-change-in-prod`
+   * `VITE_API_TOKEN`: *(must match SYNAPSE_API_SECRET on the backend)*
 4. Click **Deploy**.
 5. In ~45 seconds, your live production frontend is ready (e.g., `https://synapseair.vercel.app`).
 

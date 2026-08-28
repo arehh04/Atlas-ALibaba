@@ -1,0 +1,492 @@
+{
+  "schemaVersion": 2,
+  "summary": {
+    "evidenceMode": "session-rich",
+    "evidenceBoundary": {
+      "manifest": {
+        "schemaVersion": 2,
+        "sourceFingerprint": "6cd36b07b6ba7397",
+        "adapterVersion": "qoder-task-loop-source-v2",
+        "platform": "qoder",
+        "selection": {
+          "strategy": "all-eligible",
+          "eligibleCount": 26,
+          "analyzedCount": 26,
+          "confidence": "High"
+        }
+      },
+      "episodeCoverage": {
+        "episodeCount": 207,
+        "editedEpisodeCount": 207,
+        "closedEpisodeCount": 0,
+        "recoveredEpisodeCount": 0
+      },
+      "deliveryEvidenceLevels": [],
+      "sourceGaps": []
+    },
+    "semanticFacets": {
+      "schemaVersion": 1,
+      "status": "supplementary",
+      "entries": [
+        {
+          "id": "session-insight:source-coverage",
+          "kind": "redacted-summary",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "source-coverage",
+            "High"
+          ],
+          "summary": "Analyzed 26 of 26 sessions; 3/6 enabled source roots exist. Use this as the current workspace evidence boundary for final insight cards.",
+          "evidenceRefs": [],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:validation-behavior",
+          "kind": "redacted-summary",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "validation-behavior",
+            "Low"
+          ],
+          "summary": "No validation command category was observed in the analyzed session sample. Inspect more sessions or add explicit validation guidance before claiming validation-after-edit behavior.",
+          "evidenceRefs": [],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:post-edit-validation",
+          "kind": "rework-correction",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "post-edit-validation",
+            "High"
+          ],
+          "summary": "Observed 248 edit event(s), but no later validation command in the analyzed sample. Route this lead to Harness session-evidence review to inspect the affected Task Episodes and later relevant validation before any finding.",
+          "evidenceRefs": [
+            {
+              "kind": "global-project-jsonl",
+              "id": "session-insight-3-1",
+              "type": "assistant",
+              "line": 2739
+            }
+          ],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:execution-friction",
+          "kind": "friction-taxonomy",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "execution-friction",
+            "Low"
+          ],
+          "summary": "No strong execution friction signal in the analyzed sample. Keep friction claims narrow unless additional failed commands, rejected actions, or warnings are inspected.",
+          "evidenceRefs": [],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:tool-mix",
+          "kind": "redacted-summary",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "tool-mix",
+            "High"
+          ],
+          "summary": "Most observed tool: Read (578). Use this as workflow evidence, then inspect bounded sessions before claiming user intent.",
+          "evidenceRefs": [
+            {
+              "kind": "execution-transcript",
+              "id": "session-insight-5-1",
+              "type": "assistant",
+              "line": 32
+            }
+          ],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:session-complexity",
+          "kind": "redacted-summary",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "session-complexity",
+            "High"
+          ],
+          "summary": "Observed 1 active long session(s); longest active estimate: 6h 01m. Review task family, outcome, and friction before deciding whether this duration reflects a problem or any decomposition, tool, delegation, or model change is needed.",
+          "evidenceRefs": [
+            {
+              "kind": "global-project-jsonl",
+              "id": "session-insight-6-1",
+              "type": "session_meta",
+              "line": 1
+            }
+          ],
+          "modelVersion": "session-insights-v1"
+        },
+        {
+          "id": "session-insight:session-usage-efficiency",
+          "kind": "redacted-summary",
+          "episodeRef": null,
+          "status": "candidate",
+          "labels": [
+            "session-usage-efficiency",
+            "High"
+          ],
+          "summary": "The analysis covered 26 sessions: 1 met the active-long threshold, with the longest estimated at 361 minutes. This activity describes effort only; token or credit evidence is incomplete and does not establish model preference, quality, or savings.",
+          "evidenceRefs": [
+            {
+              "kind": "global-project-jsonl",
+              "id": "session-insight-7-1",
+              "type": "session_meta",
+              "line": 1
+            }
+          ],
+          "modelVersion": "session-insights-v1"
+        }
+      ]
+    },
+    "learningCapture": {
+      "schemaVersion": 1,
+      "state": "N/A",
+      "summary": "N/A — requires two comparable observation windows and an intervention comparison.",
+      "interventions": []
+    },
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Skills",
+        "MCP",
+        "Plugins",
+        "Rules",
+        "Hooks",
+        "Commands",
+        "Custom Agents",
+        "Workflows",
+        "Memories"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 40,
+          "paths": [
+            "~/.agents/skills/airunway-aks-setup/SKILL.md",
+            "~/.agents/skills/appinsights-instrumentation/SKILL.md",
+            "~/.agents/skills/atlas-flight-booking/SKILL.md",
+            "~/.qoder/skills/atlas-flight-booking/SKILL.md",
+            "~/.agents/skills/azure-ai/SKILL.md",
+            "~/.agents/skills/azure-aigateway/SKILL.md",
+            "~/.agents/skills/azure-cloud-migrate/SKILL.md",
+            "~/.agents/skills/azure-compliance/SKILL.md",
+            "~/.agents/skills/azure-compute/SKILL.md",
+            "~/.agents/skills/azure-cost/SKILL.md",
+            "~/.agents/skills/azure-deploy/SKILL.md",
+            "~/.agents/skills/azure-diagnostics/SKILL.md"
+          ]
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 1,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.mcp.json"
+          ]
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 3,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/better-harness/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin"
+          ]
+        },
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ],
+      "repositorySourceRows": [],
+      "memoryDetails": {
+        "contentPolicy": "metadata-only",
+        "scanState": "scanned-empty",
+        "scopeCounts": [],
+        "integrity": {
+          "status": "reviewed",
+          "titleCount": 0,
+          "reviewedTitleCount": 0,
+          "truncated": false,
+          "exactCollisionGroups": 0,
+          "similarityCandidates": 0
+        }
+      }
+    },
+    "usageActivity": {
+      "schemaVersion": 2,
+      "dateBasis": "UTC",
+      "measurementBasis": "session-starts-active-estimate-model-active-session-days-skill-invocations-and-loads",
+      "truncated": false,
+      "dates": [
+        "2026-08-18",
+        "2026-08-19",
+        "2026-08-20",
+        "2026-08-21",
+        "2026-08-22",
+        "2026-08-23",
+        "2026-08-24",
+        "2026-08-25",
+        "2026-08-26"
+      ],
+      "sessions": {
+        "total": 26,
+        "starts": [
+          9,
+          15,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2
+        ],
+        "activeMinutes": [
+          362.5,
+          38.4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2.8
+        ]
+      },
+      "models": [],
+      "skills": []
+    },
+    "usageEfficiency": {
+      "schemaVersion": 2,
+      "selection": {
+        "strategy": "all-eligible",
+        "eligibleSessionCount": 26,
+        "analyzedSessionCount": 26,
+        "complete": true
+      },
+      "roles": {
+        "userThreadCandidateCount": 26,
+        "childAgentCandidateCount": 0
+      },
+      "longSessions": {
+        "activeCount": 1,
+        "wallOnlyCount": 0,
+        "longestActiveMinutes": 360.5,
+        "activeRatio": 0.0385,
+        "estimate": {
+          "method": "capped-event-gap",
+          "activeThresholdMinutes": 45,
+          "gapCapMinutes": 5,
+          "idleGapMinutes": 30
+        },
+        "samples": [
+          {
+            "alias": "S1",
+            "role": "user-thread-candidate",
+            "activeMinutes": 360.5,
+            "failureCount": 0
+          }
+        ]
+      },
+      "accounting": {
+        "mode": "effort-proxy",
+        "responseCount": 0,
+        "modelAttributedResponseCount": 0,
+        "unattributedResponseCount": 0,
+        "usageFieldObservedCount": 0,
+        "nonZeroUsageCount": 0,
+        "exactCreditsAvailable": false,
+        "pricingVersion": null
+      },
+      "modelUsage": [],
+      "outcomeReview": {
+        "status": "required",
+        "reviewedCandidateCount": 0,
+        "reviewedActiveLongCount": 0,
+        "comparableModelOutcomeEvidence": false,
+        "recommendation": "controlled-a-b-required"
+      },
+      "reviewLead": {
+        "id": "session-usage-outcome-review-gap",
+        "title": "1 long-session candidate still need outcome review",
+        "reason": "1 of 26 analyzed sessions (3.9%) crossed the estimated active-time threshold; the longest estimate was 360.5 minutes and 0 have reviewed outcomes. 0 additional long spans may be idle or resumed work. This is an investigation lead, not a confirmed efficiency, decomposition, tool, or model problem.",
+        "expectedOutcome": "Each displayed candidate is classified by task family, outcome, and friction so the report can decide whether any real improvement is needed.",
+        "aiFixPrompt": "/better-harness review these sessions\n\n1 long-session candidate still need outcome review\n\n## Evidence to inspect\n\n- S1: user-thread candidate, about 360.5 estimated active minutes, 0 failure event(s)\n\n## First step\n\nCreate <run> in the OS temporary directory, then run from the project root:\n\n```bash\nnode scripts/session-analysis.mjs insights --platform qoder --workspace . --selection all-eligible --limit 1000 --format json --output <run>/insights.json\nnode scripts/session-analysis/usage-review-packet.mjs --source <run>/insights.json --workspace . --limit 8 --output <run>/.review-packet.json\n```\n\nThe private review packet resolves candidates locally. Write taskFamily, outcome, friction, confidence, and evidenceReason only for S1. Finish diagnosis before editing product code or creating a Memory, Skill, or Hook.\n\n## What we saw\n\n1 of 26 analyzed sessions (3.9%) crossed the estimated active-time threshold; the longest estimate was 360.5 minutes and 0 have reviewed outcomes. 0 additional long spans may be idle or resumed work. This is an investigation lead, not a confirmed efficiency, decomposition, tool, or model problem.\n\n## Why review it\n\nWithout outcome review, complex work, tool friction, idle/resume noise, and a normal long task remain indistinguishable.\n\n## Expected result\n\nEach displayed candidate is classified by task family, outcome, and friction so the report can decide whether any real improvement is needed.\n\n## Scope\n\nCreate only a privacy-safe session-efficiency review and reader report. Do not edit product code or treat wall span as active cost. Durable reports keep aliases only; do not copy the private review packet into them. This is the complete 1/1 candidate view; conclusions still require semantic review.\n\n## Done when\n\n<run>/.review.json has one valid row for each of S1; semantic review writes <run>/insights.reviewed.json; and <run>/report.md validates against the reviewed source. If review confirms no problem, do not create an improvement.\n\n## Validation\n\n- Run `node scripts/session-analysis/usage-semantic-review.mjs --source <run>/insights.json --packet <run>/.review-packet.json --review <run>/.review.json --output <run>/insights.reviewed.json`\n- Run `node scripts/session-analysis/validate-usage-report.mjs --source <run>/insights.reviewed.json --report <run>/report.md`; it must return `ok: true`\n- Confirm `outcomeReview.reviewedActiveLongCount` in the reviewed source equals the number of reviewed displayed aliases; delete the two private review files after validation",
+        "sampleCoverage": {
+          "shown": 1,
+          "total": 1,
+          "complete": true
+        }
+      }
+    },
+    "projectName": "Atlas ALibaba",
+    "locale": "en",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 26,
+    "overview": "The project has a full-stack travel-recovery platform with Docker, CI, and deployment infrastructure declared, but committed API secrets, a non-functional test gate, and zero observed post-edit validation leave changes unconfirmed and credentials exposed.",
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "Task Understanding",
+        "score": 45,
+        "summary": "No scoped agent instructions exist for either the backend or frontend; context and boundaries depend entirely on inline docstrings and a README with no machine-readable routing.",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "Controlled Execution",
+        "score": 50,
+        "summary": "Docker Compose, start.bat, and .env.example provide startup routes, but port fragmentation across four files and incomplete environment coverage make the correct configuration ambiguous.",
+        "findingRefs": [
+          "committed-secrets"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "Change Validation",
+        "score": 35,
+        "summary": "CI declares lint, type check, and test stages, but the test suite requires a live backend server that CI never bootstraps, making the test gate structurally non-functional.",
+        "findingRefs": [
+          "broken-test-gate",
+          "no-post-edit-validation"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "Reliable Delivery",
+        "score": 30,
+        "summary": "Deployment pipeline and smoke tests are declared, but no delivery acceptance, rollback mechanism, or observed deployment evidence supports the delivery boundary.",
+        "findingRefs": [
+          "no-post-edit-validation"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "Learning Capture",
+        "score": 40,
+        "summary": "A bounded review was completed, but zero recurring demand, zero interventions, and insufficient episode comparability prevent lifecycle or reusable-improvement evidence.",
+        "findingRefs": [
+          "broken-skill-anchor"
+        ]
+      }
+    ],
+    "assignmentSummaries": []
+  },
+  "findings": [
+    {
+      "id": "committed-secrets",
+      "title": "Live API secrets committed in a tracked .env file",
+      "severity": "High",
+      "reason": "The file travel-recovery-os/backend/.env contains live API keys (DeepSeek, OpenRouter/Hermes, n8n JWT, Atlas sandbox credentials) and is tracked in git despite being listed in .gitignore. Once committed, secrets persist in git history regardless of later .gitignore additions. Any clone or fork of the repository exposes these credentials. The .gitignore rule is present but cannot retroactively untrack an already-committed file.",
+      "dimensionRefs": [
+        "controlled-execution"
+      ],
+      "aiFixPrompt": "Rotate every exposed credential, then remove .env from tracking:\n\n1. Rotate DEEPSEEK_API_KEY, HERMES_API_KEY, N8N_API_KEY, and ATLAS_CLIENT_SECRET at their respective providers.\n2. Run: git rm --cached travel-recovery-os/backend/.env\n3. Commit the removal.\n4. Verify .gitignore covers backend/.env.\n5. For history cleanup, evaluate whether BFG Repo-Cleaner or git filter-repo is appropriate for the repository's collaboration model.\n\nValidation:\n- Confirm new keys work and old keys are revoked at each provider.\n- Confirm git ls-files no longer includes travel-recovery-os/backend/.env.",
+      "expectedArtifact": "Runbook",
+      "expectedOutput": [
+        "Update the existing Runbook owner identified by the reviewed evidence and retain a focused validation result."
+      ]
+    },
+    {
+      "id": "broken-test-gate",
+      "title": "CI test gate cannot execute the declared test suite",
+      "severity": "Medium",
+      "reason": "The CI workflow (ci.yml) runs 'pytest -x -v --tb=short' but the test suite (test_qa_suite.py, 18 async tests) requires a live backend server at http://127.0.0.1:8001. No CI step starts the backend before pytest, so the first test will fail with a connection-refused error. The test file's own docstring states 'Requires a running backend at http://127.0.0.1:8000' — a port that also does not match the default BASE_URL of 8001. The CI test gate is declared but structurally non-functional.",
+      "dimensionRefs": [
+        "change-validation"
+      ],
+      "aiFixPrompt": "Add a server-bootstrap step to CI before the pytest command:\n\n1. Start the backend in the background: python -m uvicorn main:app &\n2. Add a wait-for-health step that polls /health until 200.\n3. Then run pytest.\n4. Alternatively, refactor tests to use FastAPI TestClient for unit-level isolation.\n\nValidation:\n- CI green on a test PR.\n- All 18 tests execute (pass or fail on assertions, not connection errors).",
+      "expectedArtifact": "Config",
+      "expectedOutput": [
+        "Update the existing Config owner identified by the reviewed evidence and retain a focused validation result."
+      ]
+    },
+    {
+      "id": "broken-skill-anchor",
+      "title": "Broken navigation anchor in azure-reliability Skill",
+      "severity": "Low",
+      "reason": "Line 130 of the azure-reliability SKILL.md links to '#step-3-both-paths-multi-region-followup--ask-and-wait' (followup as one word), but the actual heading at line 321 is 'Step 3 (both paths): Multi-region follow-up — ASK and WAIT', which generates a slug with a hyphen (follow-up). The broken anchor prevents correct navigation when the Skill drives multi-region remediation workflows. Confirmed by lint error (skill-missing-local-reference).",
+      "dimensionRefs": [
+        "learning-capture"
+      ],
+      "aiFixPrompt": "Fix the anchor at line 130 of the azure-reliability SKILL.md:\n\nChange: #step-3-both-paths-multi-region-followup--ask-and-wait\nTo: #step-3-both-paths-multi-region-follow-up--ask-and-wait\n\nValidation:\n- Re-run agent-lint on the skill; the skill-missing-local-reference error should clear.",
+      "expectedArtifact": "Skill",
+      "expectedOutput": [
+        "Update the existing Skill owner identified by the reviewed evidence and retain a focused validation result."
+      ]
+    },
+    {
+      "id": "no-post-edit-validation",
+      "title": "Edits across observed sessions lack post-edit validation",
+      "severity": "Medium",
+      "reason": "Across 26 analyzed sessions with 248 edit events, no validation commands (tests, builds, lint) were observed after edits. The primary test suite requires a live server that CI never starts, no pre-commit hook enforces local validation, and the config.py production validator emits warnings.warn() instead of raising — so production misconfiguration is logged but not blocked. Changes can ship without any mechanical confirmation that they work.",
+      "dimensionRefs": [
+        "change-validation",
+        "reliable-delivery"
+      ],
+      "aiFixPrompt": "Wire validation into the edit and delivery cycle:\n\n1. Fix the CI test gate (see finding: broken-test-gate) so tests actually run.\n2. Add a pre-commit hook (e.g., pre-commit framework) with ruff check and mypy for local fast feedback.\n3. Change config.py production validator from warnings.warn() to raise so misconfiguration blocks startup.\n4. Add at least one FastAPI TestClient-based unit test that does not require a live server.\n\nValidation:\n- Pre-commit hook rejects a deliberately bad commit locally.\n- CI test job passes on a clean branch.\n- Production startup fails loudly with an invalid config value.",
+      "expectedArtifact": "Gate",
+      "expectedOutput": [
+        "Update the existing Gate owner identified by the reviewed evidence and retain a focused validation result."
+      ]
+    }
+  ]
+}

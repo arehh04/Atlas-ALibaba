@@ -1,12 +1,15 @@
 import uuid
 from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter
 
-from backend.schemas.api_models import RawTextTestPayload, PassengerChatPayload
+from backend.schemas.api_models import PassengerChatPayload, RawTextTestPayload
 from backend.services.llm_service import extract_disruption_with_hermes
-from backend.services.n8n_service import dispatch_hitl_to_n8n, get_n8n_event_log, answer_passenger_question
-from backend.tools.atlas_client import search_alternative_flights, issue_ticket
+from backend.services.n8n_service import (
+    answer_passenger_question,
+    dispatch_hitl_to_n8n,
+    get_n8n_event_log,
+)
+from backend.tools.atlas_client import issue_ticket, search_alternative_flights
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/api", tags=["tests", "n8n_mocks"])
 
@@ -40,7 +43,7 @@ async def test_atlas_ticket(pnr: str = "PNR-DEMO-88", flight_id: str = "ATLAS-30
     }
 
 @router.post("/test/n8n")
-async def test_n8n_endpoint(custom_url: Optional[str] = None):
+async def test_n8n_endpoint(custom_url: str | None = None):
     """Test endpoint for outbound n8n WhatsApp webhook dispatch."""
     receipt = await dispatch_hitl_to_n8n(
         thread_id=f"test-{uuid.uuid4().hex[:6]}",

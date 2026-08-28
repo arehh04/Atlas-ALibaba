@@ -10,10 +10,9 @@ Gracefully falls back to Python stdlib ``logging`` when ``structlog`` is not ins
 """
 
 import logging
-import os
 import sys
 from contextlib import contextmanager
-from typing import Any, Optional
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Optional structlog import
@@ -104,7 +103,7 @@ def setup_logging(
 # Logger factory
 # ---------------------------------------------------------------------------
 
-def get_logger(name: Optional[str] = None, **bind_kwargs: Any):
+def get_logger(name: str | None = None, **bind_kwargs: Any):
     """
     Return a structured logger bound with *bind_kwargs*.
 
@@ -139,7 +138,7 @@ def LogContext(**fields: Any):
 
     import structlog.contextvars as ctx
 
-    token = ctx.bind_contextvars(**fields)
+    ctx.bind_contextvars(**fields)
     try:
         yield
     finally:

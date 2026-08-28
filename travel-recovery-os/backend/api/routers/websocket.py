@@ -9,11 +9,11 @@ Provides a WebSocket endpoint at /ws/{thread_id} for:
 
 import asyncio
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from backend.services.websocket_manager import ws_manager
 from backend.services.telemetry_service import broadcast_event, get_event_history
+from backend.services.websocket_manager import ws_manager
 from backend.swarm import swarm_graph
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 router = APIRouter(tags=["websocket"])
 
@@ -136,7 +136,7 @@ async def _handle_hitl_decision(thread_id: str, action: str, notes: str, websock
     except Exception as e:
         await websocket.send_json({
             "type": "WS_ERROR",
-            "message": f"HITL processing error: {str(e)}"
+            "message": f"HITL processing error: {e!s}"
         })
 
 
@@ -190,5 +190,5 @@ async def _resume_graph(thread_id: str, config: dict):
         await ws_manager.send_json(thread_id, {
             "type": "WORKFLOW_ERROR",
             "thread_id": thread_id,
-            "message": f"Resume error: {str(ex)}"
+            "message": f"Resume error: {ex!s}"
         })

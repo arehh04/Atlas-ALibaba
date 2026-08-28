@@ -16,29 +16,35 @@ Resilience:
 """
 
 import asyncio
-from datetime import datetime, timedelta
-import json
 import logging
-import os
 import random
-import shutil
-from typing import Any, Dict, List, Optional
+from datetime import datetime, timedelta
+from typing import Any
+
 import httpx
 
 try:
     from ..config import settings
-    from ..middleware.resilience import retry_with_backoff, CircuitBreakerOpen, atlas_breaker
+    from ..middleware.resilience import (
+        CircuitBreakerOpen,
+        atlas_breaker,
+        retry_with_backoff,
+    )
 except (ImportError, ValueError):
     from config import settings
-    from middleware.resilience import retry_with_backoff, CircuitBreakerOpen, atlas_breaker
+    from middleware.resilience import (
+        CircuitBreakerOpen,
+        atlas_breaker,
+        retry_with_backoff,
+    )
 
 logger = logging.getLogger(__name__)
 
 
-def _get_atlas_headers() -> Dict[str, str]:
+def _get_atlas_headers() -> dict[str, str]:
     """Generates official Atlas request headers according to Atlas API specification."""
-    client_id = getattr(settings, "ATLAS_CLIENT_ID", "CTR12752_api_1")
-    client_secret = getattr(settings, "ATLAS_CLIENT_SECRET", "sandbox-sk-CTR12752_api_1")
+    client_id = getattr(settings, "ATLAS_CLIENT_ID", "")
+    client_secret = getattr(settings, "ATLAS_CLIENT_SECRET", "")
     return {
         "Content-Type": "application/json",
         "Accept": "*/*",
@@ -48,7 +54,7 @@ def _get_atlas_headers() -> Dict[str, str]:
     }
 
 
-def _format_date_for_atlas(raw_date: Optional[str]) -> str:
+def _format_date_for_atlas(raw_date: str | None) -> str:
     """Ensures travel date is formatted as YYYYMMDD and is a valid future sandbox date."""
     now = datetime.now()
     if not raw_date:
@@ -79,7 +85,7 @@ def _format_atlas_time(raw_dt_str: str) -> str:
     return raw
 
 
-async def _atlas_rest_search(origin: str, destination: str, travel_date: str) -> List[Dict[str, Any]]:
+async def _atlas_rest_search(origin: str, destination: str, travel_date: str) -> list[dict[str, Any]]:
     """
     Directly calls the official Atlas REST API POST /search.do.
     Supports distinct production search base URL or unified sandbox base URL.
@@ -118,7 +124,7 @@ async def _atlas_rest_search(origin: str, destination: str, travel_date: str) ->
         if not routings:
             raise ValueError(f"No routings found for {origin}->{destination} on {formatted_date}")
 
-        normalized: List[Dict[str, Any]] = []
+        normalized: list[dict[str, Any]] = []
         for idx, r in enumerate(routings[:4]):
             routing_id = r.get("routingIdentifier", "")
             adult_price = float(r.get("adultPrice", 120.0))
@@ -168,7 +174,7 @@ async def _atlas_rest_search(origin: str, destination: str, travel_date: str) ->
 
 
 # In-memory TTL cache for flight searches
-_flight_search_cache: Dict[str, Dict[str, Any]] = {}
+_flight_search_cache: dict[str, dict[str, Any]] = {}
 CACHE_TTL_SECONDS = 300  # 5 minutes
 
 
@@ -176,7 +182,7 @@ async def search_alternative_flights(
     origin: str,
     destination: str,
     date: str
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Searches live flight offers using the official Atlas Flight Booking API / CLI.
     Features in-memory TTL caching for instant sub-millisecond retrieval on repeat searches.
@@ -219,7 +225,7 @@ async def search_alternative_flights(
     return results
 
 
-async def _atlas_rest_issue_ticket(pnr: str, routing_identifier: Optional[str] = None) -> Dict[str, Any]:
+async def _atlas_rest_issue_ticket(pnr: str, routing_identifier: str | None = None) -> dict[str, Any]:
     """
     Executes live Verify -> Order -> Pay -> Query lifecycle on Atlas API.
     Supports split base URLs for production search and transaction gateways.
@@ -331,7 +337,7 @@ async def _atlas_rest_issue_ticket(pnr: str, routing_identifier: Optional[str] =
         }
 
 
-async def issue_ticket(pnr: str, new_flight_id: str) -> Dict[str, Any]:
+async def issue_ticket(pnr: str, new_flight_id: str) -> dict[str, Any]:
     """
     Automates re-ticketing and PNR status update via official Atlas API with fallback.
     """
@@ -357,7 +363,7 @@ async def issue_ticket(pnr: str, new_flight_id: str) -> Dict[str, Any]:
     }
 
 
-async def _sandbox_fallback(origin: str, destination: str) -> List[Dict[str, Any]]:
+async def _sandbox_fallback(origin: str, destination: str) -> list[dict[str, Any]]:
     """High-fidelity sandbox flight data when route is unlisted in sandbox."""
     await asyncio.sleep(0.2)
     now = datetime.now()

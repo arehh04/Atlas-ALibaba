@@ -10,11 +10,10 @@ Resilience:
 - Graceful fallbacks (regex extraction, deterministic scoring) when LLMs are unavailable.
 """
 
-import asyncio
 import json
 import re
-from typing import Any, Dict, List, Optional
-import httpx
+from typing import Any
+
 from openai import AsyncOpenAI
 
 try:
@@ -23,15 +22,25 @@ except (ImportError, ValueError):
     from config import settings
 
 try:
-    from ..middleware.resilience import retry_with_backoff, CircuitBreakerOpen, hermes_breaker, deepseek_breaker
+    from ..middleware.resilience import (
+        CircuitBreakerOpen,
+        deepseek_breaker,
+        hermes_breaker,
+        retry_with_backoff,
+    )
 except (ImportError, ValueError):
-    from middleware.resilience import retry_with_backoff, CircuitBreakerOpen, hermes_breaker, deepseek_breaker
+    from middleware.resilience import (
+        CircuitBreakerOpen,
+        deepseek_breaker,
+        hermes_breaker,
+        retry_with_backoff,
+    )
 
 
 # ---------------------------------------------------------------------------
 # 1. Hermes / Local LLM: Unstructured Disruption Text Extraction
 # ---------------------------------------------------------------------------
-async def extract_disruption_with_hermes(raw_text: str) -> Dict[str, Any]:
+async def extract_disruption_with_hermes(raw_text: str) -> dict[str, Any]:
     """
     Uses Hermes (via Ollama / OpenAI-compatible endpoint) to extract structured
     disruption JSON from raw airline NOTAMs, SMS alerts, or operational messages.
@@ -96,7 +105,7 @@ async def extract_disruption_with_hermes(raw_text: str) -> Dict[str, Any]:
         return _fallback_regex_extraction(raw_text, error_hint=str(e))
 
 
-def _fallback_regex_extraction(raw_text: str, error_hint: str = "") -> Dict[str, Any]:
+def _fallback_regex_extraction(raw_text: str, error_hint: str = "") -> dict[str, Any]:
     """Deterministic extraction fallback if local LLM is offline."""
     pnr_match = re.search(r"\b(PNR[-\s]?[A-Z0-9]{4,8}|[A-Z0-9]{6})\b", raw_text, re.IGNORECASE)
     flt_match = re.search(r"\b([A-Z0-9]{2}[-\s]?\d{3,4})\b", raw_text)
@@ -124,10 +133,10 @@ def _fallback_regex_extraction(raw_text: str, error_hint: str = "") -> Dict[str,
 # 2. DeepSeek LLM: Multi-Criteria Route Optimization & CoT Scoring
 # ---------------------------------------------------------------------------
 async def evaluate_routes_with_deepseek(
-    passenger_profile: Dict[str, Any],
-    candidate_routes: List[Dict[str, Any]],
-    disruption_event: Dict[str, Any]
-) -> Dict[str, Any]:
+    passenger_profile: dict[str, Any],
+    candidate_routes: list[dict[str, Any]],
+    disruption_event: dict[str, Any]
+) -> dict[str, Any]:
     """
     Invokes DeepSeek LLM for Chain-of-Thought (CoT) route evaluation against
     passenger loyalty SLAs, layover tolerances, and cabin classes.
@@ -135,8 +144,8 @@ async def evaluate_routes_with_deepseek(
     Resilience: Wrapped with DeepSeek circuit breaker and 2 retries.
     Falls back to deterministic scoring when DeepSeek is unavailable.
     """
-    tier = passenger_profile.get("loyalty_tier", "GOLD")
-    p_name = passenger_profile.get("passenger_name", "Valued Passenger")
+    passenger_profile.get("loyalty_tier", "GOLD")
+    passenger_profile.get("passenger_name", "Valued Passenger")
 
     system_prompt = (
         "You are DeepSeek Travel Arbiter, an expert airline operational AI. "
@@ -206,10 +215,10 @@ async def evaluate_routes_with_deepseek(
 
 
 def _fallback_deterministic_arbiter(
-    passenger_profile: Dict[str, Any],
-    candidate_routes: List[Dict[str, Any]],
+    passenger_profile: dict[str, Any],
+    candidate_routes: list[dict[str, Any]],
     error_hint: str = ""
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Deterministic CoT fallback reasoning engine."""
     loyalty_tier = passenger_profile.get("loyalty_tier", "GOLD")
     preferred_cabin = passenger_profile.get("preferred_cabin", "Business")
@@ -255,10 +264,8 @@ def _fallback_deterministic_arbiter(
 
     if loyalty_tier in ["PLATINUM", "GOLD"] and best_score >= 0.85:
         hitl_status = "BYPASSED"
-        msg = f"Auto-Approved: Route {best_flt} satisfies {loyalty_tier} tier SLA."
     else:
         hitl_status = "PENDING"
-        msg = f"HITL Required: Route {best_flt} requires passenger WhatsApp confirmation."
 
     passenger_name = passenger_profile.get("passenger_name", "Traveler")
     whatsapp_copy = (

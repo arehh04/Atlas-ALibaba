@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 from backend.api.dependencies import verify_api_key
-from backend.schemas.api_models import DisruptionPayload, ConsensusPayload
-from backend.state import AgentSwarmState, DisruptionEvent, PassengerContext
+from backend.schemas.api_models import ConsensusPayload, DisruptionPayload
 from backend.services.swarm_runner import run_swarm_pipeline
-from backend.swarm import swarm_graph
 from backend.services.telemetry_service import broadcast_event
+from backend.state import AgentSwarmState, DisruptionEvent, PassengerContext
+from backend.swarm import swarm_graph
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 
 router = APIRouter(prefix="/webhook", tags=["webhooks"])
 
@@ -156,7 +156,7 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
                     "type": "WORKFLOW_COMPLETE",
                     "thread_id": thread_id,
                     "timestamp": datetime.now().isoformat(),
-                    "message": f"✅ Resumed workflow complete. Ticket finalized.",
+                    "message": "✅ Resumed workflow complete. Ticket finalized.",
                     "ticket": ticket
                 })
             except Exception as ex:
@@ -164,7 +164,7 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
                     "type": "WORKFLOW_ERROR",
                     "thread_id": thread_id,
                     "timestamp": datetime.now().isoformat(),
-                    "message": f"Resume error: {str(ex)}"
+                    "message": f"Resume error: {ex!s}"
                 })
                 
         import asyncio

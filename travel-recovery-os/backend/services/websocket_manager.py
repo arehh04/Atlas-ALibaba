@@ -6,9 +6,7 @@ and HITL consensus communication.
 """
 
 import asyncio
-import json
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from fastapi import WebSocket
 
@@ -20,7 +18,7 @@ class WebSocketManager:
     """
 
     def __init__(self):
-        self._connections: Dict[str, Set[WebSocket]] = {}
+        self._connections: dict[str, set[WebSocket]] = {}
         self._lock = asyncio.Lock()
 
     async def connect(self, thread_id: str, websocket: WebSocket):
@@ -39,10 +37,10 @@ class WebSocketManager:
                 if not self._connections[thread_id]:
                     del self._connections[thread_id]
 
-    async def send_json(self, thread_id: str, data: Dict[str, Any]):
+    async def send_json(self, thread_id: str, data: dict[str, Any]):
         """Sends a JSON message to all connected clients for a thread."""
         connections = self._connections.get(thread_id, set()).copy()
-        dead: List[WebSocket] = []
+        dead: list[WebSocket] = []
         for ws in connections:
             try:
                 await ws.send_json(data)
@@ -53,19 +51,19 @@ class WebSocketManager:
         for ws in dead:
             await self.disconnect(thread_id, ws)
 
-    async def broadcast(self, data: Dict[str, Any]):
+    async def broadcast(self, data: dict[str, Any]):
         """Broadcasts to ALL connected clients across all threads."""
         all_threads = list(self._connections.keys())
         for thread_id in all_threads:
             await self.send_json(thread_id, data)
 
-    def get_connection_count(self, thread_id: Optional[str] = None) -> int:
+    def get_connection_count(self, thread_id: str | None = None) -> int:
         """Returns the number of active connections."""
         if thread_id:
             return len(self._connections.get(thread_id, set()))
         return sum(len(conns) for conns in self._connections.values())
 
-    def get_active_threads(self) -> List[str]:
+    def get_active_threads(self) -> list[str]:
         """Returns list of thread IDs with active connections."""
         return list(self._connections.keys())
 

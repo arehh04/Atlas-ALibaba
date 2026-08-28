@@ -8,7 +8,7 @@ Falls back to MemorySaver if aiosqlite is not installed.
 """
 
 import os
-from typing import Any, Tuple
+from typing import Any
 
 try:
     from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
@@ -23,7 +23,6 @@ except ImportError:
     _SYNC_SQLITE_SAVER_AVAILABLE = False
 
 from langgraph.checkpoint.memory import MemorySaver
-
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -40,7 +39,7 @@ def _ensure_data_dir():
     os.makedirs(db_dir, exist_ok=True)
 
 
-def build_checkpointer() -> Tuple[Any, str]:
+def build_checkpointer() -> tuple[Any, str]:
     """
     Builds and returns a (checkpointer, provider_name) tuple.
 

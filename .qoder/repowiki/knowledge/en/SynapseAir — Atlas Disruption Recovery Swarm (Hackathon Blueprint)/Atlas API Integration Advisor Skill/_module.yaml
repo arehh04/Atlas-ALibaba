@@ -1,0 +1,8 @@
+schema_version: 1
+module_path: atlas_integration_advisor_skill
+title: Atlas API Integration Advisor Skill
+scope:
+    - atlas-api-integration-advisor (2)/
+source_files: []
+depends_on: []
+related_to: []

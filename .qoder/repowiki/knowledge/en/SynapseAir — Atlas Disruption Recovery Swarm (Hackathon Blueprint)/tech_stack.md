@@ -1,0 +1,1 @@
+Python 3.12+ with FastAPI and Pydantic v2; LangGraph StateGraph with MemorySaver checkpointer; Deepseek V4 Flash and Hermes LLMs; Vue 3 + Vite + TailwindCSS frontend; n8n webhooks for HITL; Atlas Sandbox API for flight search and booking.

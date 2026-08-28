@@ -1,10 +1,12 @@
 import asyncio
-import httpx
+import os
 from datetime import datetime, timedelta
 
-CLIENT_ID = "CTR12752_api_1"
-CLIENT_SECRET = "sandbox-sk-CTR12752_api_1"
-BASE_URL = "https://sandbox.atriptech.com"
+import httpx
+
+CLIENT_ID = os.environ.get("ATLAS_CLIENT_ID", "")
+CLIENT_SECRET = os.environ.get("ATLAS_CLIENT_SECRET", "")
+BASE_URL = os.environ.get("ATLAS_BASE_URL", "https://sandbox.atriptech.com")
 HEADERS = {
     "Content-Type": "application/json",
     "Accept": "*/*",

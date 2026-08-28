@@ -1,0 +1,1 @@
+Markdown-based Claude Code skill (YAML frontmatter in `SKILL.md`); integrates with an external MCP documentation service at `https://resources.atriptech.com/~gitbook/mcp` for live API reference lookups.

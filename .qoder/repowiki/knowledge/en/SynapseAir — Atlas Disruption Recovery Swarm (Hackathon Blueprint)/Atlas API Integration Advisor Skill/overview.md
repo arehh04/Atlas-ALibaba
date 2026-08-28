@@ -1,0 +1,1 @@
+A Claude Code skill that guides clients through integrating with the Atlas flight booking API, covering flow selection, code generation, sandbox onboarding, and troubleshooting.

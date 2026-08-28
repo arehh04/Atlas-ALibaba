@@ -10,9 +10,9 @@ Provides:
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from enum import Enum
-from functools import wraps
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, TypeVar
 
 logger = logging.getLogger("synapseair.resilience")
 
@@ -54,7 +54,7 @@ async def retry_with_backoff(
     """
     import random
 
-    last_exception: Optional[Exception] = None
+    last_exception: Exception | None = None
 
     for attempt in range(max_retries + 1):
         try:
@@ -91,7 +91,6 @@ class CircuitState(Enum):
 
 class CircuitBreakerOpen(Exception):
     """Raised when the circuit breaker is OPEN and rejecting requests."""
-    pass
 
 
 class CircuitBreaker:
@@ -177,7 +176,7 @@ class CircuitBreaker:
             result = await coro_factory()
             self._on_success()
             return result
-        except Exception as e:
+        except Exception:
             self._on_failure()
             raise
 

@@ -12,14 +12,18 @@ Phase 4: Refactored to Pydantic BaseSettings with env profiles & validation.
 
 import os
 import warnings
-from typing import Literal, Optional
+from pathlib import Path
+from typing import Literal
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Determine env file based on environment profile
+# Determine env file based on environment profile.
+# Resolve relative to config.py (backend/) rather than the current working
+# directory so the app loads backend/.env regardless of where it is launched
+# from (repo root, backend/, Docker WORKDIR, etc.).
 _ENV = os.getenv("ENVIRONMENT", "development")
-_ENV_FILE = {
+_ENV_FILE = Path(__file__).resolve().parent / {
     "development": ".env",
     "staging": ".env.staging",
     "production": ".env.production",
@@ -40,11 +44,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "SynapseAir Travel Recovery OS"
     DEBUG: bool = True
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
+    ENVIRONMENT: Literal["development", "staging", "production", "test"] = "development"
     SYNAPSE_API_SECRET: str = "default-insecure-secret-change-in-prod"
     REQUIRE_AUTH: bool = False
 
     # ── DeepSeek LLM (Main Reasoning & Arbiter) ─────────────────────────
-    DEEPSEEK_API_KEY: Optional[str] = ""
+    DEEPSEEK_API_KEY: str | None = ""
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
     DEEPSEEK_MODEL: str = "deepseek-chat"
 
@@ -55,8 +60,8 @@ class Settings(BaseSettings):
 
     # ── n8n Webhook & API (WhatsApp Gateway) ─────────────────────────────
     N8N_API_URL: str = "http://127.0.0.1:5678"
-    N8N_API_KEY: Optional[str] = ""
-    N8N_WEBHOOK_URL: Optional[str] = ""
+    N8N_API_KEY: str | None = ""
+    N8N_WEBHOOK_URL: str | None = ""
     N8N_CONSENSUS_CALLBACK_URL: str = "http://127.0.0.1:8001/webhook/consensus"
 
     # ── Atlas Official GDS API (Sandbox & Production) ──────────────────
@@ -64,26 +69,26 @@ class Settings(BaseSettings):
     ATLAS_CLIENT_ID: str = "CTR12752_api_1"
     ATLAS_CLIENT_SECRET: str = "sandbox-sk-CTR12752_api_1"
     ATLAS_BASE_URL: str = "https://sandbox.atriptech.com"
-    ATLAS_SEARCH_BASE_URL: Optional[str] = None       # Populated in Prod from ATRIP Company Information
-    ATLAS_TRANSACTION_BASE_URL: Optional[str] = None  # Populated in Prod from ATRIP Company Information
-    ATLAS_API_KEY: Optional[str] = "CTR12752_api_1"
+    ATLAS_SEARCH_BASE_URL: str | None = None       # Populated in Prod from ATRIP Company Information
+    ATLAS_TRANSACTION_BASE_URL: str | None = None  # Populated in Prod from ATRIP Company Information
+    ATLAS_API_KEY: str | None = "CTR12752_api_1"
 
     # ── Redis ────────────────────────────────────────────────────────────
-    REDIS_URL: Optional[str] = "redis://localhost:6379/0"
+    REDIS_URL: str | None = "redis://localhost:6379/0"
 
     # ── JWT Auth ─────────────────────────────────────────────────────────
-    JWT_SECRET_KEY: Optional[str] = None
+    JWT_SECRET_KEY: str | None = None
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60
 
     # ── Observability ────────────────────────────────────────────────────
-    OTEL_ENDPOINT: Optional[str] = ""
+    OTEL_ENDPOINT: str | None = ""
     LOG_LEVEL: str = "INFO"
     LOG_JSON: bool = False
 
     @field_validator("JWT_SECRET_KEY", mode="before")
     @classmethod
-    def default_jwt_secret(cls, v: Optional[str], info) -> str:
+    def default_jwt_secret(cls, v: str | None, info) -> str:
         """Fall back to SYNAPSE_API_SECRET if JWT_SECRET_KEY is not set."""
         if not v:
             return info.data.get("SYNAPSE_API_SECRET", "default-insecure-secret-change-in-prod")

@@ -1,0 +1,29 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: en-US
+branch: main
+nodes_managed: true
+exported_at: "2026-08-27T16:16:03Z"
+modules:
+    "":
+        dir_name: SynapseAir — Atlas Disruption Recovery Swarm (Hackathon Blueprint)
+        title: SynapseAir — Atlas Disruption Recovery Swarm (Hackathon Blueprint)
+        scope:
+            - blueprint.md
+            - .gitignore
+            - Atlas_UAT_Environment (2).json
+            - Atlas_UAT_HappyPath.postman_collection (2).json
+        source_files: []
+        children:
+            - atlas_integration_advisor_skill
+        depends_on: []
+        related_to: []
+    atlas_integration_advisor_skill:
+        dir_name: Atlas API Integration Advisor Skill
+        title: Atlas API Integration Advisor Skill
+        scope:
+            - atlas-api-integration-advisor (2)/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

@@ -12,9 +12,10 @@ Phase 2 Enhancements:
 - error_state for per-node failure tracking
 """
 
-from typing import Annotated, Any, Dict, List, Optional
-from typing_extensions import TypedDict
 import operator
+from typing import Annotated, Any
+
+from typing_extensions import TypedDict
 
 
 class DisruptionEvent(TypedDict, total=False):
@@ -40,7 +41,7 @@ class PassengerContext(TypedDict, total=False):
     requires_direct_flight: bool
     preferred_cabin: str
     seat_preference: str  # 'WINDOW', 'AISLE'
-    dietary_requirements: Optional[str]
+    dietary_requirements: str | None
 
 
 class FlightRoute(TypedDict, total=False):
@@ -54,14 +55,14 @@ class FlightRoute(TypedDict, total=False):
     arrival_time: str
     duration_hours: float
     layovers: int
-    stops_detail: List[str]
+    stops_detail: list[str]
     cabin_class: str
     available_seats: int
     base_fare_usd: float
     score: float  # Computed by Arbiter agent
     scoring_rationale: str
-    financial_savings: Optional[Dict[str, float]]
-    scoring_breakdown: Optional[Dict[str, Any]]
+    financial_savings: dict[str, float] | None
+    scoring_breakdown: dict[str, Any] | None
 
 
 class ExecutionLog(TypedDict, total=False):
@@ -71,7 +72,7 @@ class ExecutionLog(TypedDict, total=False):
     agent_name: str
     level: str  # 'INFO', 'WARN', 'DECISION', 'SUCCESS', 'ERROR'
     message: str
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
 
 # ---------------------------------------------------------------------------
@@ -81,7 +82,7 @@ class ExecutionLog(TypedDict, total=False):
 class BaggageContext(TypedDict, total=False):
     """Baggage transfer evaluation results from the Baggage Agent."""
     checked_bags: int
-    special_items: List[str]  # e.g., 'sports_equipment', 'pet', 'fragile'
+    special_items: list[str]  # e.g., 'sports_equipment', 'pet', 'fragile'
     interline_eligible: bool
     baggage_transfer_confirmed: bool
     transfer_notes: str
@@ -118,7 +119,7 @@ class AgentMessage(TypedDict, total=False):
     from_agent: str
     to_agent: str  # '*' for broadcast
     message_type: str  # 'REQUEST', 'RESPONSE', 'NOTIFICATION', 'WARNING'
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     timestamp: str
     correlation_id: str
 
@@ -151,16 +152,16 @@ class AgentSwarmState(TypedDict, total=False):
     thread_id: str
     disruption_event: DisruptionEvent
     passenger_context: PassengerContext
-    candidate_routes: Annotated[List[FlightRoute], operator.add]
-    selected_route: Optional[FlightRoute]
+    candidate_routes: Annotated[list[FlightRoute], operator.add]
+    selected_route: FlightRoute | None
     hitl_status: str  # 'PENDING' | 'APPROVED' | 'REJECTED' | 'BYPASSED'
-    execution_logs: Annotated[List[ExecutionLog], operator.add]
-    ticket_confirmation: Optional[Dict[str, Any]]
-    sla_constraints: Optional[Dict[str, Any]]
+    execution_logs: Annotated[list[ExecutionLog], operator.add]
+    ticket_confirmation: dict[str, Any] | None
+    sla_constraints: dict[str, Any] | None
 
     # Phase 2: Enhanced state fields
-    baggage_context: Optional[BaggageContext]
-    compensation_result: Optional[CompensationResult]
-    connecting_flights: Annotated[List[ConnectingFlight], operator.add]
-    agent_messages: Annotated[List[AgentMessage], operator.add]
-    error_state: Optional[Dict[str, Any]]
+    baggage_context: BaggageContext | None
+    compensation_result: CompensationResult | None
+    connecting_flights: Annotated[list[ConnectingFlight], operator.add]
+    agent_messages: Annotated[list[AgentMessage], operator.add]
+    error_state: dict[str, Any] | None

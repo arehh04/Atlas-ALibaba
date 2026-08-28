@@ -28,8 +28,9 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=production
+      - PORT=8000
     volumes:
-      - backend-data:/app/data
+      - backend-data:/srv/backend/data
     depends_on:
       redis:
         condition: service_healthy
@@ -51,20 +52,6 @@ services:
       backend:
         condition: service_healthy
 
-  # ── n8n Workflow Automation ────────────────────────────────────────────
-  n8n:
-    image: n8nio/n8n:latest
-    restart: unless-stopped
-    ports:
-      - "5678:5678"
-    volumes:
-      - n8n-data:/home/node/.n8n
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=changeme
-
 volumes:
   redis-data:
   backend-data:
-  n8n-data:

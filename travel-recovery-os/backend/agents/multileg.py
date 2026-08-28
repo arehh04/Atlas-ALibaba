@@ -9,12 +9,17 @@ Responsible for:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 try:
-    from state import AgentSwarmState, ConnectingFlight, ExecutionLog, AgentMessage
+    from state import AgentMessage, AgentSwarmState, ConnectingFlight, ExecutionLog
 except ImportError:
-    from backend.state import AgentSwarmState, ConnectingFlight, ExecutionLog, AgentMessage
+    from backend.state import (
+        AgentMessage,
+        AgentSwarmState,
+        ConnectingFlight,
+        ExecutionLog,
+    )
 
 
 # Minimum Connection Times (MCT) in minutes by airport
@@ -45,7 +50,7 @@ def _analyze_connection_viability(
     destination: str,
     delay_minutes: int,
     reason: str,
-) -> List[ConnectingFlight]:
+) -> list[ConnectingFlight]:
     """
     Analyzes potential multi-leg disruption impact.
     If the original flight was a connection, evaluates whether downstream
@@ -81,19 +86,19 @@ def _analyze_connection_viability(
     return [connecting]
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def multileg_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def multileg_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Multi-Leg Agent Node: Evaluates connecting flight disruptions.
 

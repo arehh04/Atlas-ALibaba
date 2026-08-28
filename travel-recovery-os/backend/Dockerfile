@@ -1,6 +1,8 @@
 FROM python:3.12-slim
 
-WORKDIR /app
+# Application root: the backend package lives at /srv/backend so that
+# `import backend.main` resolves with PYTHONPATH=/srv.
+WORKDIR /srv
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -9,18 +11,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for layer caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Copy application code
-COPY . .
+# Copy application code as the `backend` package
+COPY . /srv/backend
 
 # Set Python path to ensure module imports work seamlessly
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/srv
 ENV PORT=7860
 
 # Create data directory for SQLite
-RUN mkdir -p /app/data
+RUN mkdir -p /srv/backend/data
 
 # Expose Hugging Face (7860), Standard (8000), and Dev (8001) ports
 EXPOSE 7860 8000 8001

@@ -1,4 +1,4 @@
 """Tools package for SynapseAir backend."""
-from .atlas_client import search_alternative_flights, issue_ticket
+from .atlas_client import issue_ticket, search_alternative_flights
 
-__all__ = ["search_alternative_flights", "issue_ticket"]
+__all__ = ["issue_ticket", "search_alternative_flights"]

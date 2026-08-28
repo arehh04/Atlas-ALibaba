@@ -1,9 +1,10 @@
 ﻿"""
 api_keys.py - API Key Management with Scopes for SynapseAir
 """
-import hashlib, secrets, time, os
+import hashlib
+import secrets
+import time
 from dataclasses import dataclass, field
-from typing import Optional, Dict, List, Set
 
 
 @dataclass
@@ -11,10 +12,10 @@ class APIKey:
     key_id: str
     key_hash: str
     name: str
-    scopes: Set[str]
+    scopes: set[str]
     created_at: float = field(default_factory=time.time)
-    expires_at: Optional[float] = None
-    last_used_at: Optional[float] = None
+    expires_at: float | None = None
+    last_used_at: float | None = None
     is_active: bool = True
 
     def is_expired(self):
@@ -35,14 +36,22 @@ class APIKeyManager:
     VALID_SCOPES = {"admin", "read-only", "webhook-only", "history", "stream"}
 
     def __init__(self):
-        self._keys_by_hash: Dict[str, APIKey] = {}
-        self._keys_by_id: Dict[str, APIKey] = {}
+        self._keys_by_hash: dict[str, APIKey] = {}
+        self._keys_by_id: dict[str, APIKey] = {}
         self._register_default_key()
 
     def _register_default_key(self):
-        default_secret = os.getenv("SYNAPSE_API_SECRET", "default-insecure-secret-change-in-prod")
-        self._register_raw_key(raw_key=default_secret, key_id="default",
-                               name="Default API Key (from env)", scopes={"admin"})
+        """Register the static secret from settings as a managed key.
+
+        Skips registration entirely when only the public placeholder is
+        configured — that string must never authenticate anything.
+        """
+        from backend.config import settings
+        secret = settings.SYNAPSE_API_SECRET
+        if not secret or secret == "default-insecure-secret-change-in-prod":
+            return  # fail-safe: no default key rather than an exploitable one
+        self._register_raw_key(raw_key=secret, key_id="default",
+                               name="Default API Key (from settings)", scopes={"admin"})
 
     def _register_raw_key(self, raw_key, key_id, name, scopes):
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
@@ -63,8 +72,7 @@ class APIKeyManager:
         return raw_key, api_key.to_dict()
 
     def validate_key(self, raw_key):
-        if raw_key.startswith("Bearer "):
-            raw_key = raw_key[7:]
+        raw_key = raw_key.removeprefix("Bearer ")
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
         api_key = self._keys_by_hash.get(key_hash)
         if api_key is None or not api_key.is_active or api_key.is_expired():

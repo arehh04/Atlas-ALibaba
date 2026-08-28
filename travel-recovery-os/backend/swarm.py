@@ -10,46 +10,47 @@ Implements:
 """
 
 from datetime import datetime
-from typing import Any, Dict, Literal
-from langgraph.graph import StateGraph, END, START
+from typing import Any, Literal
+
+from langgraph.graph import END, START, StateGraph
 
 try:
-    from .state import AgentSwarmState, ExecutionLog
-    from .agents.sentinel import sentinel_node
-    from .agents.profile import profile_agent_node as profile_node
-    from .agents.scout import scout_node
     from .agents.arbiter import arbiter_node
     from .agents.baggage import baggage_node
     from .agents.compensation import compensation_node
     from .agents.multileg import multileg_node
-    from .tools.atlas_client import issue_ticket
+    from .agents.profile import profile_agent_node as profile_node
+    from .agents.scout import scout_node
+    from .agents.sentinel import sentinel_node
+    from .state import AgentSwarmState, ExecutionLog
     from .store.sqlite_checkpointer import checkpointer, checkpointer_provider
+    from .tools.atlas_client import issue_ticket
 except (ImportError, ValueError):
-    from backend.state import AgentSwarmState, ExecutionLog
-    from backend.agents.sentinel import sentinel_node
-    from backend.agents.profile import profile_agent_node as profile_node
-    from backend.agents.scout import scout_node
     from backend.agents.arbiter import arbiter_node
     from backend.agents.baggage import baggage_node
     from backend.agents.compensation import compensation_node
     from backend.agents.multileg import multileg_node
+    from backend.agents.profile import profile_agent_node as profile_node
+    from backend.agents.scout import scout_node
+    from backend.agents.sentinel import sentinel_node
+    from backend.state import AgentSwarmState, ExecutionLog
+    from backend.store.sqlite_checkpointer import checkpointer
     from backend.tools.atlas_client import issue_ticket
-    from backend.store.sqlite_checkpointer import checkpointer, checkpointer_provider
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def execution_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def execution_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Execution Node: Issues the final rebooked ticket via Atlas API once approved or bypassed.
     """
@@ -127,7 +128,7 @@ def route_disruption_type(state: AgentSwarmState) -> Literal["multileg_and_forwa
     return "forward_only"
 
 
-async def hitl_breakpoint_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def hitl_breakpoint_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     HITL Breakpoint Node: Pauses execution waiting for passenger approval via n8n / WhatsApp.
     """

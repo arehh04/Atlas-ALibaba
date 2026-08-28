@@ -1,8 +1,9 @@
 import asyncio
 import os
 import sys
-import httpx
 from datetime import datetime, timedelta
+
+import httpx
 
 # Ensure parent directory is in sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -14,7 +15,7 @@ from config import settings
 
 async def run_smoke_test():
     print(f"\n{'='*70}")
-    print(f"ATLAS PRODUCTION GO-LIVE SMOKE TEST")
+    print("ATLAS PRODUCTION GO-LIVE SMOKE TEST")
     print(f"{'='*70}")
 
     search_url = (getattr(settings, "ATLAS_SEARCH_BASE_URL", None) or getattr(settings, "ATLAS_BASE_URL", "https://sandbox.atriptech.com")).rstrip("/")
@@ -84,7 +85,7 @@ async def run_smoke_test():
             )
             print(f"   HTTP Status: {r.status_code}")
             if r.status_code == 200:
-                print(f"   [OK] Transaction gateway reachable and authenticated.")
+                print("   [OK] Transaction gateway reachable and authenticated.")
             else:
                 print(f"   [WARN] Gateway responded with HTTP {r.status_code}")
         except Exception as exc:

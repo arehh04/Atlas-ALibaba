@@ -7,7 +7,7 @@ echo ======================================================================
 echo.
 
 echo [1/2] Starting FastAPI + LangGraph Backend (Port 8001)...
-start "SynapseAir Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn main:app --host 127.0.0.1 --port 8001 --reload"
+start "SynapseAir Backend" cmd /k "cd /d %~dp0 && python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001 --reload"
 
 echo [2/2] Starting Vue 3 Command Center Dashboard (Port 5173)...
 start "SynapseAir Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"

@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "projectName": "Atlas ALibaba",
+    "locale": "en",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 26,
+    "overview": "The project has a full-stack travel-recovery platform with Docker, CI, and deployment infrastructure declared, but committed API secrets, a non-functional test gate, and zero observed post-edit validation leave changes unconfirmed and credentials exposed.",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Skills",
+        "MCP",
+        "Plugins",
+        "Rules",
+        "Hooks",
+        "Commands",
+        "Custom Agents",
+        "Workflows",
+        "Memories"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Global",
+            "Plugin"
+          ],
+          "count": 40,
+          "paths": [
+            "~/.agents/skills/airunway-aks-setup/SKILL.md",
+            "~/.agents/skills/appinsights-instrumentation/SKILL.md",
+            "~/.agents/skills/atlas-flight-booking/SKILL.md",
+            "~/.qoder/skills/atlas-flight-booking/SKILL.md",
+            "~/.agents/skills/azure-ai/SKILL.md",
+            "~/.agents/skills/azure-aigateway/SKILL.md",
+            "~/.agents/skills/azure-cloud-migrate/SKILL.md",
+            "~/.agents/skills/azure-compliance/SKILL.md",
+            "~/.agents/skills/azure-compute/SKILL.md",
+            "~/.agents/skills/azure-cost/SKILL.md",
+            "~/.agents/skills/azure-deploy/SKILL.md",
+            "~/.agents/skills/azure-diagnostics/SKILL.md"
+          ]
+        },
+        {
+          "surface": "MCP",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 1,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.mcp.json"
+          ]
+        },
+        {
+          "surface": "Plugins",
+          "scopes": [
+            "Plugin"
+          ],
+          "count": 3,
+          "paths": [
+            "~/.qoder/plugins/cache/qoder-bundler/better-harness/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/computer-use/.qoder-plugin/plugin.json",
+            "~/.qoder/plugins/cache/qoder-bundler/qoder-create-plugin"
+          ]
+        },
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Memories",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ],
+      "repositorySourceRows": []
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "Task Understanding",
+        "score": 45,
+        "summary": "No scoped agent instructions exist for either the backend or frontend; context and boundaries depend entirely on inline docstrings and a README with no machine-readable routing.",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "Controlled Execution",
+        "score": 50,
+        "summary": "Docker Compose, start.bat, and .env.example provide startup routes, but port fragmentation across four files and incomplete environment coverage make the correct configuration ambiguous.",
+        "findingRefs": [
+          "committed-secrets"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "Change Validation",
+        "score": 35,
+        "summary": "CI declares lint, type check, and test stages, but the test suite requires a live backend server that CI never bootstraps, making the test gate structurally non-functional.",
+        "findingRefs": [
+          "broken-test-gate",
+          "no-post-edit-validation"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "Reliable Delivery",
+        "score": 30,
+        "summary": "Deployment pipeline and smoke tests are declared, but no delivery acceptance, rollback mechanism, or observed deployment evidence supports the delivery boundary.",
+        "findingRefs": [
+          "no-post-edit-validation"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "Learning Capture",
+        "score": 40,
+        "summary": "A bounded review was completed, but zero recurring demand, zero interventions, and insufficient episode comparability prevent lifecycle or reusable-improvement evidence.",
+        "findingRefs": [
+          "broken-skill-anchor"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "committed-secrets",
+      "title": "Live API secrets committed in a tracked .env file",
+      "severity": "High",
+      "reason": "The file travel-recovery-os/backend/.env contains live API keys (DeepSeek, OpenRouter/Hermes, n8n JWT, Atlas sandbox credentials) and is tracked in git despite being listed in .gitignore. Once committed, secrets persist in git history regardless of later .gitignore additions. Any clone or fork of the repository exposes these credentials. The .gitignore rule is present but cannot retroactively untrack an already-committed file.",
+      "expectedOutput": [
+        "Update the existing Runbook owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Runbook",
+      "aiFixPrompt": "Rotate every exposed credential, then remove .env from tracking:\n\n1. Rotate DEEPSEEK_API_KEY, HERMES_API_KEY, N8N_API_KEY, and ATLAS_CLIENT_SECRET at their respective providers.\n2. Run: git rm --cached travel-recovery-os/backend/.env\n3. Commit the removal.\n4. Verify .gitignore covers backend/.env.\n5. For history cleanup, evaluate whether BFG Repo-Cleaner or git filter-repo is appropriate for the repository's collaboration model.\n\nValidation:\n- Confirm new keys work and old keys are revoked at each provider.\n- Confirm git ls-files no longer includes travel-recovery-os/backend/.env.",
+      "dimensionRefs": [
+        "controlled-execution"
+      ]
+    },
+    {
+      "id": "broken-test-gate",
+      "title": "CI test gate cannot execute the declared test suite",
+      "severity": "Medium",
+      "reason": "The CI workflow (ci.yml) runs 'pytest -x -v --tb=short' but the test suite (test_qa_suite.py, 18 async tests) requires a live backend server at http://127.0.0.1:8001. No CI step starts the backend before pytest, so the first test will fail with a connection-refused error. The test file's own docstring states 'Requires a running backend at http://127.0.0.1:8000' — a port that also does not match the default BASE_URL of 8001. The CI test gate is declared but structurally non-functional.",
+      "expectedOutput": [
+        "Update the existing Config owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Config",
+      "aiFixPrompt": "Add a server-bootstrap step to CI before the pytest command:\n\n1. Start the backend in the background: python -m uvicorn main:app &\n2. Add a wait-for-health step that polls /health until 200.\n3. Then run pytest.\n4. Alternatively, refactor tests to use FastAPI TestClient for unit-level isolation.\n\nValidation:\n- CI green on a test PR.\n- All 18 tests execute (pass or fail on assertions, not connection errors).",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "broken-skill-anchor",
+      "title": "Broken navigation anchor in azure-reliability Skill",
+      "severity": "Low",
+      "reason": "Line 130 of the azure-reliability SKILL.md links to '#step-3-both-paths-multi-region-followup--ask-and-wait' (followup as one word), but the actual heading at line 321 is 'Step 3 (both paths): Multi-region follow-up — ASK and WAIT', which generates a slug with a hyphen (follow-up). The broken anchor prevents correct navigation when the Skill drives multi-region remediation workflows. Confirmed by lint error (skill-missing-local-reference).",
+      "expectedOutput": [
+        "Update the existing Skill owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Skill",
+      "aiFixPrompt": "Fix the anchor at line 130 of the azure-reliability SKILL.md:\n\nChange: #step-3-both-paths-multi-region-followup--ask-and-wait\nTo: #step-3-both-paths-multi-region-follow-up--ask-and-wait\n\nValidation:\n- Re-run agent-lint on the skill; the skill-missing-local-reference error should clear.",
+      "dimensionRefs": [
+        "learning-capture"
+      ]
+    },
+    {
+      "id": "no-post-edit-validation",
+      "title": "Edits across observed sessions lack post-edit validation",
+      "severity": "Medium",
+      "reason": "Across 26 analyzed sessions with 248 edit events, no validation commands (tests, builds, lint) were observed after edits. The primary test suite requires a live server that CI never starts, no pre-commit hook enforces local validation, and the config.py production validator emits warnings.warn() instead of raising — so production misconfiguration is logged but not blocked. Changes can ship without any mechanical confirmation that they work.",
+      "expectedOutput": [
+        "Update the existing Gate owner identified by the reviewed evidence and retain a focused validation result."
+      ],
+      "expectedArtifact": "Gate",
+      "aiFixPrompt": "Wire validation into the edit and delivery cycle:\n\n1. Fix the CI test gate (see finding: broken-test-gate) so tests actually run.\n2. Add a pre-commit hook (e.g., pre-commit framework) with ruff check and mypy for local fast feedback.\n3. Change config.py production validator from warnings.warn() to raise so misconfiguration blocks startup.\n4. Add at least one FastAPI TestClient-based unit test that does not require a live server.\n\nValidation:\n- Pre-commit hook rejects a deliberately bad commit locally.\n- CI test job passes on a clean branch.\n- Production startup fails loudly with an invalid config value.",
+      "dimensionRefs": [
+        "change-validation",
+        "reliable-delivery"
+      ]
+    }
+  ]
+}

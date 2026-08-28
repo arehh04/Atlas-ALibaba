@@ -4,14 +4,13 @@ api/routers/history.py - Historical Disruption Data API
 Provides endpoints for querying past disruption runs, analytics, and statistics.
 """
 
-from typing import Optional
-from fastapi import APIRouter, HTTPException
 
 from backend.store.event_store import (
-    get_disruptions,
     get_disruption_by_thread,
     get_disruption_stats,
+    get_disruptions,
 )
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/api/history", tags=["history"])
 
@@ -20,9 +19,9 @@ router = APIRouter(prefix="/api/history", tags=["history"])
 async def list_disruptions(
     limit: int = 50,
     offset: int = 0,
-    airline: Optional[str] = None,
-    loyalty_tier: Optional[str] = None,
-    status: Optional[str] = None,
+    airline: str | None = None,
+    loyalty_tier: str | None = None,
+    status: str | None = None,
 ):
     """Paginated list of past disruption events with optional filters.
 

@@ -9,11 +9,14 @@ Phase 4: Supports three auth modes (checked in order):
 Also provides scope-checking and rate-limiting dependency factories.
 """
 
-from fastapi import Security, HTTPException, Request, Depends
-from fastapi.security import APIKeyHeader
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_429_TOO_MANY_REQUESTS
-
 from backend.config import settings
+from fastapi import Depends, HTTPException, Request, Security
+from fastapi.security import APIKeyHeader
+from starlette.status import (
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_429_TOO_MANY_REQUESTS,
+)
 
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 
@@ -38,16 +41,15 @@ async def verify_api_key(api_key: str | None = Security(api_key_header)) -> dict
 
     # Strip "Bearer " prefix if present
     token = api_key
-    if token.startswith("Bearer "):
-        token = token[7:]
+    token = token.removeprefix("Bearer ")
 
     # 1) Legacy static key
-    if token in (settings.SYNAPSE_API_SECRET, "default-insecure-secret-change-in-prod"):
+    if token and token == settings.SYNAPSE_API_SECRET and token != "default-insecure-secret-change-in-prod":
         return {"subject": "legacy-key", "scopes": {"admin"}, "auth_mode": "legacy"}
 
     # 2) JWT token
     try:
-        from backend.auth.jwt_handler import verify_token, _JOSE_AVAILABLE
+        from backend.auth.jwt_handler import _JOSE_AVAILABLE, verify_token
         if _JOSE_AVAILABLE:
             try:
                 payload = verify_token(token)
@@ -67,9 +69,10 @@ async def verify_api_key(api_key: str | None = Security(api_key_header)) -> dict
         manager = get_api_key_manager()
         key_info = manager.validate_key(api_key)  # accepts raw or "Bearer ..." form
         if key_info is not None:
+            # validate_key returns an APIKey dataclass, not a dict
             return {
-                "subject": key_info.get("name", "managed-key"),
-                "scopes": set(key_info.get("scopes", set())),
+                "subject": key_info.name,
+                "scopes": set(key_info.scopes),
                 "auth_mode": "managed",
             }
     except (ImportError, Exception):

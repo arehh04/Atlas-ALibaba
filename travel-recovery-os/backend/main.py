@@ -8,13 +8,12 @@ Phase 4: Added lifespan manager, new routers (WebSocket, History),
 import os
 from contextlib import asynccontextmanager
 
+from backend.api.routers import history, system, telemetry, tests, webhooks, websocket
+from backend.auth.rate_limiter import get_rate_limiter
+from backend.middleware.logging import get_logger, setup_logging
+from backend.middleware.tracing import init_tracing
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.api.routers import webhooks, telemetry, system, tests, history, websocket
-from backend.middleware.logging import setup_logging, get_logger
-from backend.middleware.tracing import init_tracing
-from backend.auth.rate_limiter import get_rate_limiter
 
 logger = get_logger(__name__)
 

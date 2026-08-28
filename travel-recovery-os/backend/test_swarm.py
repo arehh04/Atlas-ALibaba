@@ -3,7 +3,6 @@ test_swarm.py - Production Test Suite for SynapseAir (Hermes, DeepSeek, and n8n)
 """
 
 import asyncio
-import io
 import os
 import sys
 
@@ -13,11 +12,14 @@ if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
 import pytest
+from backend.services.llm_service import (
+    evaluate_routes_with_deepseek,
+    extract_disruption_with_hermes,
+)
+from backend.services.n8n_service import dispatch_hitl_to_n8n
 from backend.state import AgentSwarmState
 from backend.swarm import build_swarm_graph
-from backend.tools.atlas_client import search_alternative_flights, issue_ticket
-from backend.services.llm_service import extract_disruption_with_hermes, evaluate_routes_with_deepseek
-from backend.services.n8n_service import dispatch_hitl_to_n8n
+from backend.tools.atlas_client import issue_ticket, search_alternative_flights
 
 
 @pytest.mark.asyncio

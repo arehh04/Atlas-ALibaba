@@ -8,28 +8,29 @@ Responsible for:
 """
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
+
 try:
-    from state import AgentSwarmState, FlightRoute, ExecutionLog
+    from state import AgentSwarmState, ExecutionLog, FlightRoute
     from tools.atlas_client import search_alternative_flights
 except ImportError:
-    from backend.state import AgentSwarmState, FlightRoute, ExecutionLog
+    from backend.state import AgentSwarmState, ExecutionLog, FlightRoute
     from backend.tools.atlas_client import search_alternative_flights
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def scout_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def scout_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Scout Agent Node: Queries Atlas Sandbox API for candidate routes.
     
@@ -46,7 +47,7 @@ async def scout_node(state: AgentSwarmState) -> Dict[str, Any]:
     # Query Atlas Sandbox API tool
     raw_routes = await search_alternative_flights(origin, destination, travel_date)
     
-    candidate_routes: List[FlightRoute] = []
+    candidate_routes: list[FlightRoute] = []
     for r in raw_routes:
         candidate_routes.append({
             "flight_id": r["flight_id"],

@@ -2,8 +2,7 @@
 rate_limiter.py - Redis-backed Sliding Window Rate Limiter for SynapseAir
 """
 import time
-from typing import Optional, Dict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 try:
     import redis.asyncio as aioredis
@@ -45,7 +44,7 @@ class RateLimiter:
         self._redis = None
         self._redis_url = redis_url
         self._limits = limits or DEFAULT_LIMITS
-        self._memory_store: Dict[str, list] = {}
+        self._memory_store: dict[str, list] = {}
 
     async def _get_redis(self):
         if self._redis is None and self._redis_url and _REDIS_AVAILABLE:

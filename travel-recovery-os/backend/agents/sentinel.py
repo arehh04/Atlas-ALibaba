@@ -9,29 +9,29 @@ Responsible for:
 """
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 try:
-    from state import AgentSwarmState, DisruptionEvent, ExecutionLog
     from services.llm_service import extract_disruption_with_hermes
+    from state import AgentSwarmState, DisruptionEvent, ExecutionLog
 except ImportError:
-    from backend.state import AgentSwarmState, DisruptionEvent, ExecutionLog
     from backend.services.llm_service import extract_disruption_with_hermes
+    from backend.state import AgentSwarmState, DisruptionEvent, ExecutionLog
 
 
-def _safe_state(state: Any) -> Dict[str, Any]:
+def _safe_state(state: Any) -> dict[str, Any]:
     if isinstance(state, dict):
         return state
     if isinstance(state, (list, tuple)):
         for item in state:
             if isinstance(item, dict):
                 return item
-    if hasattr(state, "dict") and callable(getattr(state, "dict")):
+    if hasattr(state, "dict") and callable(state.dict):
         return state.dict()
     return {}
 
 
-async def sentinel_node(state: AgentSwarmState) -> Dict[str, Any]:
+async def sentinel_node(state: AgentSwarmState) -> dict[str, Any]:
     """
     Sentinel Agent Node: Intercepts raw disruption signals and validates payload.
     

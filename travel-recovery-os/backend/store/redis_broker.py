@@ -13,8 +13,7 @@ Features:
 import asyncio
 import json
 import os
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import redis.asyncio as aioredis
@@ -35,11 +34,11 @@ CHANNEL_PREFIX: str = "synapseair:channel:"
 # ---------------------------------------------------------------------------
 # Redis Connection Singleton
 # ---------------------------------------------------------------------------
-_redis_pool: Optional[Any] = None
+_redis_pool: Any | None = None
 _redis_failed: bool = False
 
 
-async def get_redis() -> Optional[Any]:
+async def get_redis() -> Any | None:
     """Returns a shared Redis connection, or None if Redis is unavailable."""
     global _redis_pool, _redis_failed
     if not _REDIS_AVAILABLE or _redis_failed:
@@ -76,14 +75,14 @@ async def close_redis():
 # ---------------------------------------------------------------------------
 # In-Memory Fallback State (mirrors old telemetry_service behavior)
 # ---------------------------------------------------------------------------
-_fallback_listeners: Dict[str, List[asyncio.Queue]] = {}
-_fallback_history: Dict[str, List[Dict[str, Any]]] = {}
+_fallback_listeners: dict[str, list[asyncio.Queue]] = {}
+_fallback_history: dict[str, list[dict[str, Any]]] = {}
 
 
 # ---------------------------------------------------------------------------
 # Public API: Broadcast & Subscribe
 # ---------------------------------------------------------------------------
-async def broadcast_event(thread_id: str, event_data: Dict[str, Any]):
+async def broadcast_event(thread_id: str, event_data: dict[str, Any]):
     """
     Broadcasts an SSE event to all active listeners for a given thread_id.
 
@@ -157,7 +156,7 @@ async def unsubscribe_thread(thread_id: str, queue: asyncio.Queue):
         listeners.remove(queue)
 
 
-async def get_event_history(thread_id: str) -> List[Dict[str, Any]]:
+async def get_event_history(thread_id: str) -> list[dict[str, Any]]:
     """
     Retrieves historical events for a thread_id.
 
@@ -179,12 +178,12 @@ async def get_event_history(thread_id: str) -> List[Dict[str, Any]]:
     return list(_fallback_history.get(thread_id, []))
 
 
-def get_fallback_listeners() -> Dict[str, List[asyncio.Queue]]:
+def get_fallback_listeners() -> dict[str, list[asyncio.Queue]]:
     """Returns the in-memory fallback listeners dict (for compatibility)."""
     return _fallback_listeners
 
 
-def get_fallback_history() -> Dict[str, List[Dict[str, Any]]]:
+def get_fallback_history() -> dict[str, list[dict[str, Any]]]:
     """Returns the in-memory fallback history dict (for compatibility)."""
     return _fallback_history
 

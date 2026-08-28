@@ -8,14 +8,16 @@ and telemetry endpoints.
 Self-bootstrapping: runs in-process via ASGITransport or against live BASE_URL.
 """
 import os
-import pytest
-import httpx
 
+import httpx
+import pytest
 from backend.main import app
 
 BASE_URL = os.getenv("SYNAPSE_TEST_URL", "http://127.0.0.1:8001")
-API_SECRET = os.getenv("SYNAPSE_API_SECRET", "default-insecure-secret-change-in-prod")
-HEADERS = {"Authorization": f"Bearer {API_SECRET}"}
+API_SECRET = os.getenv("SYNAPSE_API_SECRET", "")
+# No hardcoded fallback secret — when unset, omit the header entirely so the
+# dev-user bypass applies in development; CI/live runs export the real secret.
+HEADERS = {"Authorization": f"Bearer {API_SECRET}"} if API_SECRET else {}
 
 
 def get_test_client():
