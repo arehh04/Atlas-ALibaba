@@ -11,10 +11,10 @@ from datetime import datetime
 from typing import Any
 
 try:
-    from state import AgentSwarmState, ExecutionLog, FlightRoute
+    from state import AgentMessage, AgentSwarmState, ExecutionLog, FlightRoute
     from tools.atlas_client import search_alternative_flights
 except ImportError:
-    from backend.state import AgentSwarmState, ExecutionLog, FlightRoute
+    from backend.state import AgentMessage, AgentSwarmState, ExecutionLog, FlightRoute
     from backend.tools.atlas_client import search_alternative_flights
 
 
@@ -81,7 +81,24 @@ async def scout_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
     
+    flight_summary = ", ".join([f"{r['flight_number']} ({r['airline']} @ {r['departure_time']})" for r in candidate_routes[:3]])
+    agent_msg: AgentMessage = {
+        "from_agent": "scout",
+        "to_agent": "arbiter",
+        "message_type": "RESPONSE",
+        "text": f"🔍 Atlas API query complete: Retrieved {len(candidate_routes)} alternative routes ({flight_summary}). Relaying candidate inventory to Arbiter for ensemble scoring.",
+        "payload": {
+            "origin": origin,
+            "destination": destination,
+            "routes_count": len(candidate_routes),
+            "candidates": [{"flight_number": r["flight_number"], "airline": r["airline"], "departure": r["departure_time"], "fare": r["base_fare_usd"]} for r in candidate_routes],
+        },
+        "timestamp": now_iso,
+        "correlation_id": st.get("thread_id", ""),
+    }
+
     return {
         "candidate_routes": candidate_routes,
-        "execution_logs": [log_entry]
+        "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }

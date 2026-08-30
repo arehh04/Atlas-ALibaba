@@ -103,7 +103,15 @@ export function useSwarmStream() {
     } else if (event.type === 'HITL_REQUIRED') {
       _handleHitlRequired(event)
     } else if (event.type === 'AGENT_MESSAGE') {
-      agentMessages.value.push(event.message || event)
+      const msg = event.message || event
+      if (msg && typeof msg === 'object') {
+        const isDuplicate = agentMessages.value.some(
+          m => m.timestamp === msg.timestamp && m.from_agent === msg.from_agent && m.text === msg.text
+        )
+        if (!isDuplicate) {
+          agentMessages.value.push(msg)
+        }
+      }
     } else if (event.type === 'WORKFLOW_NODE_ERROR') {
       console.warn('Node error:', event.node, event.error)
     } else if (event.type === 'WORKFLOW_COMPLETE') {
@@ -129,6 +137,19 @@ export function useSwarmStream() {
     const update = event.state_update || {}
     const logData = event.log?.data || {}
     const now = Date.now()
+
+    if (update.agent_messages && Array.isArray(update.agent_messages)) {
+      for (const msg of update.agent_messages) {
+        if (msg && typeof msg === 'object') {
+          const isDup = agentMessages.value.some(
+            m => m.timestamp === msg.timestamp && m.from_agent === msg.from_agent && m.text === msg.text
+          )
+          if (!isDup) {
+            agentMessages.value.push(msg)
+          }
+        }
+      }
+    }
 
     if (node === 'sentinel') {
       stepExecutionTimes.sentinel = Math.max(120, now - stepStartTimestamp)

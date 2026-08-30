@@ -150,13 +150,20 @@ async def multileg_node(state: AgentSwarmState) -> dict[str, Any]:
         }
 
     # Publish message to Arbiter about connection viability
+    missed_count = len([f for f in connecting_flights if f.get("status") == "MISSED"])
+    ml_text = (
+        f"🔗 Multi-leg itinerary analysis: {len(connecting_flights)} connecting segment(s) analyzed ({missed_count} missed)."
+        if connecting_flights else
+        "🔗 Single-leg point-to-point journey confirmed. No downstream connecting risks."
+    )
     agent_msg: AgentMessage = {
         "from_agent": "multileg",
         "to_agent": "arbiter",
         "message_type": "NOTIFICATION",
+        "text": ml_text,
         "payload": {
             "has_connecting_flights": len(connecting_flights) > 0,
-            "missed_connections": len([f for f in connecting_flights if f.get("status") == "MISSED"]),
+            "missed_connections": missed_count,
             "requires_multi_leg_rebooking": any(
                 f.get("status") == "MISSED" for f in connecting_flights
             ),

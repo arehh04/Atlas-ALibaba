@@ -13,10 +13,10 @@ from typing import Any
 
 try:
     from services.llm_service import evaluate_routes_with_deepseek
-    from state import AgentSwarmState, ExecutionLog, FlightRoute
+    from state import AgentMessage, AgentSwarmState, ExecutionLog, FlightRoute
 except ImportError:
     from backend.services.llm_service import evaluate_routes_with_deepseek
-    from backend.state import AgentSwarmState, ExecutionLog, FlightRoute
+    from backend.state import AgentMessage, AgentSwarmState, ExecutionLog, FlightRoute
 
 
 # ---------------------------------------------------------------------------
@@ -235,9 +235,32 @@ async def arbiter_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
 
+    best_flt = best_route.get("flight_number") if best_route else "None"
+    arbiter_chat_text = (
+        f"🎯 Consensus decision reached: Selected {best_flt} with ensemble score {best_score:.2f} ({engine_name}). "
+        f"Action: {'Auto-approved (VIP Tier bypass)' if hitl_decision == 'BYPASSED' else 'Dispatched 1-click rebooking proposal to passenger via WhatsApp'}."
+    )
+
+    agent_msg: AgentMessage = {
+        "from_agent": "arbiter",
+        "to_agent": "*",
+        "message_type": "RESPONSE",
+        "text": arbiter_chat_text,
+        "payload": {
+            "selected_flight": best_flt,
+            "score": best_score,
+            "hitl_status": hitl_decision,
+            "scoring_rationale": best_route.get("scoring_rationale") if best_route else "",
+            "engine": engine_name,
+        },
+        "timestamp": now_iso,
+        "correlation_id": state.get("thread_id", ""),
+    }
+
     return {
         "candidate_routes": updated_candidates,
         "selected_route": best_route,
         "hitl_status": hitl_decision,
-        "execution_logs": [log_entry]
+        "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }

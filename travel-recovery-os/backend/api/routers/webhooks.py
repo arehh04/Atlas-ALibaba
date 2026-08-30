@@ -148,6 +148,17 @@ async def webhook_consensus(payload: ConsensusPayload, background_tasks: Backgro
                                 "log": log,
                                 "state_update": {k: v for k, v in node_output.items() if k != "execution_logs"}
                             })
+
+                        # Broadcast inter-agent communication messages
+                        agent_msgs = node_output.get("agent_messages", [])
+                        if isinstance(agent_msgs, list):
+                            for msg in agent_msgs:
+                                if isinstance(msg, dict):
+                                    await broadcast_event(thread_id, {
+                                        "type": "AGENT_MESSAGE",
+                                        "thread_id": thread_id,
+                                        "message": msg,
+                                    })
                             
                 final_state = await swarm_graph.aget_state(config)
                 state_vals = final_state.values if isinstance(getattr(final_state, "values", None), dict) else {}

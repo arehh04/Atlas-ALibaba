@@ -119,6 +119,7 @@ class AgentMessage(TypedDict, total=False):
     from_agent: str
     to_agent: str  # '*' for broadcast
     message_type: str  # 'REQUEST', 'RESPONSE', 'NOTIFICATION', 'WARNING'
+    text: str  # Conversational text message for group chat display
     payload: dict[str, Any]
     timestamp: str
     correlation_id: str

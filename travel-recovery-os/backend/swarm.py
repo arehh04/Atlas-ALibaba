@@ -22,7 +22,7 @@ try:
     from .agents.profile import profile_agent_node as profile_node
     from .agents.scout import scout_node
     from .agents.sentinel import sentinel_node
-    from .state import AgentSwarmState, ExecutionLog
+    from .state import AgentMessage, AgentSwarmState, ExecutionLog
     from .store.sqlite_checkpointer import checkpointer, checkpointer_provider
     from .tools.atlas_client import issue_ticket
 except (ImportError, ValueError):
@@ -33,7 +33,7 @@ except (ImportError, ValueError):
     from backend.agents.profile import profile_agent_node as profile_node
     from backend.agents.scout import scout_node
     from backend.agents.sentinel import sentinel_node
-    from backend.state import AgentSwarmState, ExecutionLog
+    from backend.state import AgentMessage, AgentSwarmState, ExecutionLog
     from backend.store.sqlite_checkpointer import checkpointer
     from backend.tools.atlas_client import issue_ticket
 
@@ -86,9 +86,25 @@ async def execution_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
 
+    agent_msg: AgentMessage = {
+        "from_agent": "execution",
+        "to_agent": "*",
+        "message_type": "NOTIFICATION",
+        "text": f"🎟️ Ticketing confirmed: E-Ticket #{ticket_receipt.get('e_ticket_number', 'N/A')} issued for PNR {pnr} on {selected_route.get('flight_number')}. Recovery journey complete.",
+        "payload": {
+            "pnr": pnr,
+            "e_ticket_number": ticket_receipt.get("e_ticket_number"),
+            "flight_number": selected_route.get("flight_number"),
+            "status": "ISSUED",
+        },
+        "timestamp": now_iso,
+        "correlation_id": st.get("thread_id", ""),
+    }
+
     return {
         "ticket_confirmation": ticket_receipt,
-        "execution_logs": [log_entry]
+        "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }
 
 

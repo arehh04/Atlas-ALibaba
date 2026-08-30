@@ -13,10 +13,10 @@ from typing import Any
 
 try:
     from services.llm_service import extract_disruption_with_hermes
-    from state import AgentSwarmState, DisruptionEvent, ExecutionLog
+    from state import AgentMessage, AgentSwarmState, DisruptionEvent, ExecutionLog
 except ImportError:
     from backend.services.llm_service import extract_disruption_with_hermes
-    from backend.state import AgentSwarmState, DisruptionEvent, ExecutionLog
+    from backend.state import AgentMessage, AgentSwarmState, DisruptionEvent, ExecutionLog
 
 
 def _safe_state(state: Any) -> dict[str, Any]:
@@ -84,7 +84,25 @@ async def sentinel_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
     
+    agent_msg: AgentMessage = {
+        "from_agent": "sentinel",
+        "to_agent": "*",
+        "message_type": "NOTIFICATION",
+        "text": f"🚨 Intercepted disruption for Flight {flight_number} (PNR: {pnr}, {origin}➔{destination}, Delay: {delay_minutes}m). Alerting Profile, Scout, Baggage, and Compensation agents to begin recovery swarm.",
+        "payload": {
+            "pnr": pnr,
+            "flight_number": flight_number,
+            "route": f"{origin} ➔ {destination}",
+            "delay_minutes": delay_minutes,
+            "reason": reason,
+            "extracted_by": extraction_meta,
+        },
+        "timestamp": now_iso,
+        "correlation_id": st.get("thread_id", ""),
+    }
+
     return {
         "disruption_event": event,
-        "execution_logs": [log_entry]
+        "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }

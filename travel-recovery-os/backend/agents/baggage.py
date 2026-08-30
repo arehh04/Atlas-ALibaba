@@ -137,6 +137,7 @@ async def baggage_node(state: AgentSwarmState) -> dict[str, Any]:
         "from_agent": "baggage",
         "to_agent": "arbiter",
         "message_type": "NOTIFICATION",
+        "text": f"🧳 Baggage assessment: {checked_bags} checked bag(s) verified ({'Interline eligible' if interline_eligible else 'Single carrier only'}). Estimated transfer time: {transfer_time} mins.",
         "payload": {
             "baggage_transfer_time_minutes": transfer_time,
             "interline_eligible": interline_eligible,

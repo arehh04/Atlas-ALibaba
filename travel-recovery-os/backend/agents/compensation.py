@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Any
 
 try:
-    from state import AgentSwarmState, CompensationResult, ExecutionLog
+    from state import AgentMessage, AgentSwarmState, CompensationResult, ExecutionLog
 except ImportError:
-    from backend.state import AgentSwarmState, CompensationResult, ExecutionLog
+    from backend.state import AgentMessage, AgentSwarmState, CompensationResult, ExecutionLog
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +188,24 @@ async def compensation_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
 
+    agent_msg: AgentMessage = {
+        "from_agent": "compensation",
+        "to_agent": "arbiter",
+        "message_type": "NOTIFICATION",
+        "text": f"⚖️ Rights evaluation: {comp_msg}. Regulation: {jurisdiction}. {'Mandatory airline voucher calculated' if eligible else 'Standard goodwill policy applies'}.",
+        "payload": {
+            "regulation": jurisdiction,
+            "eligible": eligible,
+            "amount_usd": amount_usd,
+            "currency": currency,
+            "details": details,
+        },
+        "timestamp": now_iso,
+        "correlation_id": state.get("thread_id", ""),
+    }
+
     return {
         "compensation_result": compensation,
         "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }

@@ -7,12 +7,13 @@ Calculates dynamic SLA constraints and financial liability metrics based on:
 3. Alliance rules (Direct flight requirements, cabin class eligibility, compensation budget)
 """
 
+from datetime import datetime
 from typing import Any
 
 try:
-    from state import AgentSwarmState, ExecutionLog
+    from state import AgentMessage, AgentSwarmState, ExecutionLog
 except ImportError:
-    from backend.state import AgentSwarmState, ExecutionLog
+    from backend.state import AgentMessage, AgentSwarmState, ExecutionLog
 
 
 def derive_financial_arbitrage(tier: str, delay_minutes: int) -> dict[str, float]:
@@ -109,11 +110,14 @@ async def profile_agent_node(state: AgentSwarmState) -> dict[str, Any]:
             "financial_profile": financials
         }
 
+    now_iso = datetime.now().isoformat()
+    pax_name = pax_ctx.get("passenger_name", "Passenger")
+
     log_entry: ExecutionLog = {
-        "timestamp": "",
+        "timestamp": now_iso,
         "node": "profile",
         "level": "INFO",
-        "message": f"Profile Agent derived SLA profile for {pax_ctx.get('passenger_name', 'Passenger')} ({tier}). Potential SLA avoidance: ${financials['airline_savings_usd']}.",
+        "message": f"Profile Agent derived SLA profile for {pax_name} ({tier}). Potential SLA avoidance: ${financials['airline_savings_usd']}.",
         "data": {
             "loyalty_tier": tier,
             "sla_rules": sla_rules,
@@ -121,7 +125,24 @@ async def profile_agent_node(state: AgentSwarmState) -> dict[str, Any]:
         }
     }
 
+    agent_msg: AgentMessage = {
+        "from_agent": "profile",
+        "to_agent": "arbiter",
+        "message_type": "RESPONSE",
+        "text": f"👤 Analyzed passenger {pax_name} ({tier} tier). Constraints: Max {sla_rules['max_layovers']} layover(s), {sla_rules['cabin_class_preference']} class preference. SLA liability avoidance: ${financials['airline_savings_usd']}.",
+        "payload": {
+            "loyalty_tier": tier,
+            "passenger_name": pax_name,
+            "max_layovers": sla_rules["max_layovers"],
+            "cabin_class_preference": sla_rules["cabin_class_preference"],
+            "financial_arbitrage": financials,
+        },
+        "timestamp": now_iso,
+        "correlation_id": st.get("thread_id", ""),
+    }
+
     return {
         "sla_constraints": sla_rules,
-        "execution_logs": [log_entry]
+        "execution_logs": [log_entry],
+        "agent_messages": [agent_msg],
     }

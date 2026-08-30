@@ -129,6 +129,17 @@ async def run_swarm_pipeline(thread_id: str, initial_state: AgentSwarmState, n8n
                         "state_update": {k: v for k, v in node_output.items() if k != "execution_logs"}
                     })
 
+                # Broadcast inter-agent communication messages
+                agent_msgs = node_output.get("agent_messages", [])
+                if isinstance(agent_msgs, list):
+                    for msg in agent_msgs:
+                        if isinstance(msg, dict):
+                            await broadcast_event(thread_id, {
+                                "type": "AGENT_MESSAGE",
+                                "thread_id": thread_id,
+                                "message": msg,
+                            })
+
         current_state = await swarm_graph.aget_state(config)
         state_vals = _safe_state(getattr(current_state, "values", None))
 
